@@ -10,12 +10,14 @@
 
 #include <boost/atomic.hpp>
 #include <boost/function.hpp>
+#include <boost/thread/shared_mutex.hpp>
 
 #include <Hemsleya/base/concurrent/container/msque.h>
 
-namespace angelica {
+namespace Hemsleya {
 namespace active {
 
+class active;
 class active_server;
 
 class mirco_active {
@@ -26,18 +28,23 @@ public:
 	mirco_active();
 	~mirco_active();
 
-	void post(event_handle _handle, active_server * _active_server);
+	bool post(event_handle _handle);
+
 	bool do_one();
+	
 	void run();
 
 private:
 	friend class active_server;
 
-	boost::atomic_bool _run_flag;
-	angelica::container::msque<event_handle > event_que;
+	active * owner;
+
+	boost::shared_mutex _mu;
+
+	Hemsleya::container::msque<event_handle > event_que;
 
 };
 
 } /* namespace active */
-} /* namespace angelica */
+} /* namespace Hemsleya */
 #endif /* MIRCO_ACTIVE_H_ */

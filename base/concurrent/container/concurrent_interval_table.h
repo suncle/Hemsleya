@@ -14,7 +14,7 @@
 #include <boost/atomic.hpp>
 #include <boost/pool/pool_alloc.hpp>
 
-namespace angelica{
+namespace Hemsleya{
 namespace container{
 
 #define mask 1023
@@ -495,6 +495,6 @@ private:
 };	
 	
 } //container
-} //angelica
+} //Hemsleya
 
 #endif //_CONCURRENT_INTERVAL_TABLE_H

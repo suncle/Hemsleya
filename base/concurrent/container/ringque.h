@@ -11,7 +11,7 @@
 #include <boost/thread.hpp>
 #include <boost/pool/pool_alloc.hpp>
 
-namespace angelica{
+namespace Hemsleya{
 namespace container{
 
 template<typename T, typename _Allocator = boost::pool_allocator<T>>
@@ -119,6 +119,6 @@ private:
 };
 
 }//container
-}//angelica
+}//Hemsleya
 
 #endif //_RINGQUE_H

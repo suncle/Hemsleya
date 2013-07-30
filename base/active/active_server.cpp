@@ -11,86 +11,48 @@
 #include <Windows.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-namespace angelica {
+namespace Hemsleya {
 namespace active {
 
 active_server::active_server() {
 	// TODO Auto-generated constructor stub
-	
-	//_run_flag.store(false);
-	//_empty_flag.store(false);
 
-	//SYSTEM_INFO info;
-	//GetSystemInfo(&info);
-		
-	//current_num = info.dwNumberOfProcessors;
+	_current_pool = &_active_pool[0];
+	_backstage_pool = &_active_pool[1];
 }
 
 active_server::~active_server() {
 	// TODO Auto-generated destructor stub
 }
 
-bool active_server::do_one() {
-	mirco_active * _active = _active_pool.pop();
-	if (_active == 0){
-		return false;
-	}
-	_active->run();
-	_active->_run_flag.store(false);
-
-	return true;
-}
-
 void active_server::run(){
+	boost::shared_lock<boost::shared_mutex> shared_lock(_swap_mu, boost::try_to_lock);
+
 	while(1){
-		if (!do_one()){
-			if (_run_flag.load() == false){
-				break;
-			}
-
-			if (_active_pool.size() == 0){
-				_empty_flag.store(false);
-				
-				boost::mutex::scoped_lock lock(_mu);
-				_cond.timed_wait(lock, boost::get_system_time() + boost::posix_time::seconds(3));
-			}
+		mirco_active * _active = _current_pool->pop();
+		if (_active == 0){
+			shared_lock.unlock();
+			break;
 		}
+
+		_active->run();
+		release_mirco_active(_active);
 	}
-}
 
-//void active_server::start(unsigned int  nCurrentNum){
-//	if (_run_flag.exchange(true) == false) {
-//		if (nCurrentNum == 0) {
-//			nCurrentNum = current_num;
-//		}
-//
-//		for (unsigned int i = 0; i < nCurrentNum; i++) {
-//			boost::thread th(boost::bind(&active_server::run, this));
-//			th_group.add_thread(&th);
-//		}
-//	}
-//}
-
-//void active_server::stop() {
-//	_run_flag.store(false);
-//	th_group.join_all();
-//}
-
-void active_server::post(mirco_active * _mirco_active){
-	if (_mirco_active->_run_flag.exchange(true) == false){
-		_active_pool.put(_mirco_active);
-
-		//if (_empty_flag.exchange(true) == false){
-		//	_cond.notify_all();
-		//}
+	boost::unique_lock<boost::shared_mutex> lock(_swap_mu, boost::try_to_lock);
+	if (lock.owns_lock()){
+		std::swap(_current_pool, _backstage_pool);
 	}
 }
 
 mirco_active * active_server::get_mirco_active(){
 	mirco_active * _mirco_active = _free_active_pool.pop();
 	if (_mirco_active == 0){
-		_mirco_active = new mirco_active();
+		_mirco_active = pool_mirco_active.allocate(1);
+		::new (_mirco_active) mirco_active();
 	}
+
+	_backstage_pool->put(_mirco_active);
 
 	return _mirco_active;
 }
@@ -100,4 +62,4 @@ void active_server::release_mirco_active(mirco_active * _mirco_active){
 }
 
 } /* namespace active */
-} /* namespace angelica */
+} /* namespace Hemsleya */

@@ -7,9 +7,10 @@
 #ifndef _ACTIVE_H
 #define _ACTIVE_H
 
+#include <boost/thread.hpp>
 #include <boost/function.hpp>
 
-namespace angelica {
+namespace Hemsleya {
 namespace active {
 
 class active_server;
@@ -27,11 +28,13 @@ public:
 
 private:
 	active_server * _active_server;
+
+	boost::shared_mutex _mu;
 	mirco_active * _mirco_active;
 
 };
 
 } /* namespace mirco_active */
-} /* namespace angelica */
+} /* namespace Hemsleya */
 
 #endif //_ACTIVE_H

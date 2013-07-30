@@ -8,14 +8,18 @@
 #ifndef ACTIVE_SERVER_H_
 #define ACTIVE_SERVER_H_
 
+#include <vector>
+
 #include <boost/thread.hpp>
 #include <boost/atomic.hpp>
+#include <boost/pool/pool_alloc.hpp>
 
 #include <Hemsleya/base/concurrent/container/no_blocking_pool.h>
 
-namespace angelica {
+namespace Hemsleya {
 namespace active {
 
+class active;
 class mirco_active;
 
 class active_server {
@@ -23,37 +27,30 @@ public:
 	active_server();
 	~active_server();
 
-	bool do_one();
+	void do_wait();
 
-	//void start(unsigned int  nCurrentNum = 0);
-	//void stop();
-
-public:
 	void run();
 
 private:
-	void post(mirco_active * _mirco_active);
-
 	mirco_active * get_mirco_active();
+	
 	void release_mirco_active(mirco_active * _mirco_active);
 
 private:
 	friend class mirco_active;
 	friend class active;
 
-	//boost::condition_variable _cond;
-	//boost::mutex _mu;
-	//boost::atomic_bool _empty_flag;
+	boost::pool_allocator<mirco_active> pool_mirco_active;
 
-	//boost::atomic_bool _run_flag;
+	boost::shared_mutex _swap_mu;
+	Hemsleya::container::no_blocking_pool<mirco_active> *_current_pool, *_backstage_pool;
 
-	//unsigned int current_num;
-	//boost::thread_group th_group;
+	Hemsleya::container::no_blocking_pool<mirco_active> _free_active_pool;
 
-	angelica::container::no_blocking_pool<mirco_active> _active_pool, _free_active_pool;
+	Hemsleya::container::no_blocking_pool<mirco_active> _active_pool[2];
 
 };
 
 } /* namespace active */
-} /* namespace angelica */
+} /* namespace Hemsleya */
 #endif /* ACTIVESERVER_H_ */

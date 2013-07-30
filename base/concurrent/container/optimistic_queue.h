@@ -10,9 +10,9 @@
 #include <boost/atomic.hpp>
 #include <boost/pool/pool_alloc.hpp>
 
-#include <angelica/container/detail/_hazard_ptr.h>
+#include <Hemsleya/container/detail/_hazard_ptr.h>
 
-namespace angelica{
+namespace Hemsleya{
 namespace container{
 
 template<class T, class _Ax = boost::pool_allocator<T> >
@@ -299,6 +299,6 @@ private:
 };
 
 }// container
-}// angelica
+}// Hemsleya
 
 #endif //_OPTIMISTIC_QUEUE_H

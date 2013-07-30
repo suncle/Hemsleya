@@ -22,7 +22,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/atomic.hpp>
 
-namespace angelica {
+namespace Hemsleya {
 namespace container {
 
 template <typename T>
@@ -98,6 +98,6 @@ private:
 };
 
 }// container
-}// angelica
+}// Hemsleya
 
 #endif //_NO_BLOCKING_POOL_H

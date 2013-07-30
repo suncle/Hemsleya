@@ -8,7 +8,7 @@
 #include "mirco_active.h"
 #include "active_server.h"
 
-namespace angelica {
+namespace Hemsleya {
 namespace active {
 
 mirco_active::mirco_active() {
@@ -19,12 +19,18 @@ mirco_active::~mirco_active() {
 	// TODO Auto-generated destructor stub
 }
 
-void mirco_active::post(event_handle _handle, active_server * _active_server){
+bool mirco_active::post(event_handle _handle){
+	boost::shared_lock<boost::shared_mutex> lock(_mu, boost::try_to_lock);
+	if (!lock.owns_lock()){
+		return false;
+	}
 	event_que.push(_handle);
-	_active_server->post(this);
+	return true;
 }
 
 bool mirco_active::do_one(){
+	boost::unique_lock<boost::shared_mutex> lock(_mu);
+
 	event_handle _handle;
 
 	if (!event_que.pop(_handle)){
@@ -37,6 +43,8 @@ bool mirco_active::do_one(){
 }
 
 void mirco_active::run(){
+	boost::unique_lock<boost::shared_mutex> lock(_mu);
+
 	event_handle _handle;
 
 	while(1){
@@ -49,4 +57,4 @@ void mirco_active::run(){
 }
 
 } /* namespace active */
-} /* namespace angelica */
+} /* namespace Hemsleya */

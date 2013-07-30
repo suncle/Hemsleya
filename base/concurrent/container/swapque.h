@@ -11,9 +11,9 @@
 #include <boost/atomic.hpp>
 #include <boost/pool/pool_alloc.hpp>
 
-#include <angelica/container/detail/_hazard_ptr.h>
+#include <Hemsleya/container/detail/_hazard_ptr.h>
 
-namespace angelica{
+namespace Hemsleya{
 namespace container{
 
 template <typename T, typename _Allocator = boost::pool_allocator<T> >
@@ -39,8 +39,8 @@ private:
 		boost::shared_mutex _mu;
 	};
 
-	typedef angelica::container::detail::_hazard_ptr<_que_node> _hazard_ptr;
-	typedef angelica::container::detail::_hazard_system<_que_node> _hazard_system;
+	typedef Hemsleya::container::detail::_hazard_ptr<_que_node> _hazard_ptr;
+	typedef Hemsleya::container::detail::_hazard_system<_que_node> _hazard_system;
 	typedef typename _Allocator::template rebind<_que_node>::other _node_alloc;
 	typedef typename _Allocator::template rebind<_mirco_que>::other _mirco_que_alloc;
 	typedef typename _Allocator::template rebind<_que>::other _que_alloc;
@@ -146,7 +146,7 @@ private:
 			_que_node * _tmp = _node;
 			_node = _node->_next;
 
-			_hazard_sys.retire(_tmp, boost::bind(&angelica::container::swapque<T>::put_node, this, _1));
+			_hazard_sys.retire(_tmp, boost::bind(&Hemsleya::container::swapque<T>::put_node, this, _1));
 		}while(_node != 0);
 		__mirco_que_alloc.deallocate(_p->_frond, 1);
 
@@ -155,7 +155,7 @@ private:
 			_que_node * _tmp = _node;
 			_node = _node->_next;
 
-			_hazard_sys.retire(_tmp, boost::bind(&angelica::container::swapque<T>::put_node, this, _1));
+			_hazard_sys.retire(_tmp, boost::bind(&Hemsleya::container::swapque<T>::put_node, this, _1));
 		}while(_node != 0);
 		__mirco_que_alloc.deallocate(_p->_back, 1);
 
@@ -184,6 +184,6 @@ private:
 };	
 	
 } //container
-} //angelica
+} //Hemsleya
 
 #endif //_SWAPQUE_H

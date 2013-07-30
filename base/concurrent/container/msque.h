@@ -14,7 +14,7 @@
 
 #include <Hemsleya/base/concurrent/container/detail/_hazard_ptr.h>
 
-namespace angelica {
+namespace Hemsleya {
 namespace container{
 
 template <typename T, typename _Allocator = boost::pool_allocator<T> >
@@ -35,8 +35,8 @@ private:
 		boost::atomic_uint32_t _size;
 	};
 	
-	typedef angelica::container::detail::_hazard_ptr<_list_node> _hazard_ptr;
-	typedef angelica::container::detail::_hazard_system<_list_node> _hazard_system;
+	typedef Hemsleya::container::detail::_hazard_ptr<_list_node> _hazard_ptr;
+	typedef Hemsleya::container::detail::_hazard_system<_list_node> _hazard_system;
 	typedef typename _Allocator::template rebind<_list_node>::other _node_alloc;
 	typedef typename _Allocator::template rebind<_list>::other _list_alloc;
 		
@@ -142,7 +142,7 @@ public:
 			}
 		}
 		data = _hp_next->_hazard->data;
-		_hazard_sys.retire(_hp_begin->_hazard, boost::bind(&angelica::container::msque<T>::put_node, this, _1));
+		_hazard_sys.retire(_hp_begin->_hazard, boost::bind(&Hemsleya::container::msque<T>::put_node, this, _1));
 
 		__list.load()->_size--;
 
@@ -172,7 +172,7 @@ private:
 			_list_node * _tmp = _node;
 			_node = _node->_next;
 
-			_hazard_sys.retire(_tmp, boost::bind(&angelica::container::msque<T>::put_node, this, _1));
+			_hazard_sys.retire(_tmp, boost::bind(&Hemsleya::container::msque<T>::put_node, this, _1));
 		}while(_node != 0);
 		__list_alloc.deallocate(_p, 1);
 	}
@@ -208,6 +208,6 @@ private:
 
 };
 
-} /* angelica */
+} /* Hemsleya */
 } /* container */
 #endif //_MSQUE_H

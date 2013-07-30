@@ -15,7 +15,7 @@
 #include <boost/atomic.hpp>
 #include <boost/pool/pool_alloc.hpp>
 
-namespace angelica{
+namespace Hemsleya{
 namespace container{
 namespace detail{
 	
@@ -188,7 +188,7 @@ public:
 
 };
 
-} /* angelica */
+} /* Hemsleya */
 } /* container */
 } /* detail */
 #endif // _HAZARD_PTR_H
