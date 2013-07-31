@@ -12,7 +12,7 @@
 namespace Hemsleya {
 namespace active {
 
-active::active(active_server & _active_server_) : _active_server(&_active_server_) {
+active::active(active_server & _active_server_) : _active_server(&_active_server_), _is_cancel(false){
 	_mirco_active = _active_server->get_mirco_active();
 }
 
@@ -33,6 +33,14 @@ void active::post(event_handle _handle){
 			boost::shared_lock<boost::shared_mutex> shared_lock(_mu);
 		}while(0);
 	}
+}
+
+void active::cancel(){
+	_is_cancel.store(true);
+}
+
+bool active::is_cancel(){
+	return _is_cancel.load();
 }
 
 } /* namespace active */

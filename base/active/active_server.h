@@ -40,6 +40,8 @@ private:
 	friend class mirco_active;
 	friend class active;
 
+	boost::thread_specific_ptr<mirco_active> next_active;
+
 	boost::pool_allocator<mirco_active> pool_mirco_active;
 
 	boost::shared_mutex _swap_mu;

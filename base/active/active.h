@@ -7,6 +7,7 @@
 #ifndef _ACTIVE_H
 #define _ACTIVE_H
 
+#include <boost/atomic.hpp>
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
 
@@ -26,8 +27,14 @@ public:
 
 	void post(event_handle _handle);
 
+	void cancel();
+
+	bool is_cancel();
+
 private:
 	active_server * _active_server;
+
+	boost::atomic_bool _is_cancel;
 
 	boost::shared_mutex _mu;
 	mirco_active * _mirco_active;

@@ -25,11 +25,31 @@ active_server::~active_server() {
 	// TODO Auto-generated destructor stub
 }
 
+void active_server::do_wait(){
+	boost::shared_lock<boost::shared_mutex> shared_lock(_swap_mu, boost::try_to_lock);
+
+	mirco_active * _active = next_active.get();
+	if (_active == 0){
+		if ((_active = _current_pool->pop()) != 0){
+			next_active.reset(_active);
+		}
+	}
+
+	if (_active != 0){
+		if (!_active->do_one()){
+			next_active.release();
+		}
+	}
+}
+
 void active_server::run(){
 	boost::shared_lock<boost::shared_mutex> shared_lock(_swap_mu, boost::try_to_lock);
 
 	while(1){
-		mirco_active * _active = _current_pool->pop();
+		mirco_active * _active = next_active.release();
+		if (_active == 0){
+			mirco_active * _active = _current_pool->pop();
+		}
 		if (_active == 0){
 			shared_lock.unlock();
 			break;

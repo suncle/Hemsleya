@@ -7,6 +7,7 @@
 
 #include "mirco_active.h"
 #include "active_server.h"
+#include "active.h"
 
 namespace Hemsleya {
 namespace active {
@@ -29,6 +30,11 @@ bool mirco_active::post(event_handle _handle){
 }
 
 bool mirco_active::do_one(){
+	if (owner->is_cancel()){
+		event_que.clear();
+		return false;
+	}
+
 	boost::unique_lock<boost::shared_mutex> lock(_mu);
 
 	event_handle _handle;
@@ -43,6 +49,11 @@ bool mirco_active::do_one(){
 }
 
 void mirco_active::run(){
+	if(owner->is_cancel()){
+		event_que.clear();
+		return;
+	}
+
 	boost::unique_lock<boost::shared_mutex> lock(_mu);
 
 	event_handle _handle;
