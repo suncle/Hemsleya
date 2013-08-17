@@ -5,7 +5,7 @@ AUX_SOURCE_DIRECTORY(. DIR_SRC)
 AUX_SOURCE_DIRECTORY(detail DIR_SRC_detail)
 
 SET(header_files
-    detail\_hazard_ptr.h
+    detail//_hazard_ptr.h
     concurrent_interval_table.h
     msque.h
     no_blocking_pool.h

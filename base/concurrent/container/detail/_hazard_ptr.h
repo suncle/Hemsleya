@@ -27,10 +27,46 @@ struct _hazard_ptr{
 };
 
 // hazard system 
-template <typename T>
+template <typename T, typename _Allocator = boost::pool_allocator<T> >
 class _hazard_system{
+private:
+	//Recover flag
+	boost::atomic_flag recoverflag;
+
+	// deallocate function
+	typedef boost::function<void(typename T * )> fn_dealloc;
+	// deallocate struct data
+	typedef typename T * _deallocate_data;
+	// recover list
+	struct recover_list {
+		std::vector<_deallocate_data> re_vector;
+		boost::atomic_int32_t active; // 0 使用中 / 1 未使用
+	};
+
+	// 回收队列集合
+	std::vector<recover_list * > re_list_set;
+
+	fn_dealloc _fn_dealloc;
+
+	// lock-free list(push only) storage _hazard_ptr
+	typedef _hazard_ptr<typename T> _hazard_ptr_;
+	typedef struct _list_node{
+		_hazard_ptr_ _hazard;
+		boost::atomic<_list_node *> next;
+	} _list_head;
+
+	// allocator 
+	typedef typename _Allocator::template rebind<_list_node>::other __alloc_list_node;
+		
+	__alloc_list_node _alloc_list_node;
+
+	// hazard ptr list
+	boost::atomic<_list_head *> _head;
+	// list lenght
+	boost::atomic_uint32_t llen;
+
 public:
-	_hazard_system(){
+	_hazard_system(fn_dealloc _D) : _fn_dealloc(_D){
 		llen.store(0);
 
 		re_list_set.resize(8);
@@ -46,7 +82,7 @@ public:
 		BOOST_FOREACH(recover_list * _re_list, re_list_set){
 			if(!_re_list->re_vector.empty()){
 				BOOST_FOREACH(_deallocate_data var, _re_list->re_vector){
-					var.second(var.first);
+					_fn_dealloc(var);
 				}
 				_re_list->re_vector.clear();
 			}
@@ -55,21 +91,6 @@ public:
 	}
 
 private:
-	// lock-free list(push only) storage _hazard_ptr
-	typedef _hazard_ptr<typename T> _hazard_ptr_;
-	typedef struct _list_node{
-		_hazard_ptr_ _hazard;
-		boost::atomic<_list_node *> next;
-	} _list_head;
-
-	// allocator 
-	boost::pool_allocator<_list_node> _alloc_list_node;
-
-	// hazard ptr list
-	boost::atomic<_list_head *> _head;
-	// list lenght
-	boost::atomic_uint32_t llen;
-
 	_list_node * _get_node(){
 		_list_node * _node = _alloc_list_node.allocate(1);
 		_node->_hazard._hazard = 0;
@@ -108,23 +129,6 @@ public:
 		ptr->_active.store(1);
 	}
 
-private:
-	//Recover flag
-	boost::atomic_flag recoverflag;
-
-	// deallocate function
-	typedef boost::function<void(typename T * )> fn_dealloc;
-	// deallocate struct data
-	typedef std::pair<typename T *, fn_dealloc> _deallocate_data;
-	// recover list
-	struct recover_list {
-		std::vector<_deallocate_data> re_vector;
-		boost::atomic_int32_t active; // 0 使用中 / 1 未使用
-	};
-
-	// 回收队列集合
-	std::vector<recover_list * > re_list_set;
-
 public:
 	void retire(T * p,  fn_dealloc fn){
 		// get tss rvector
@@ -147,7 +151,7 @@ public:
 		}
 
 		// push into rvector
-		_rvector_ptr->re_vector.push_back(std::make_pair(p, fn));
+		_rvector_ptr->re_vector.push_back(p);
 	
 
 		// scan
@@ -166,10 +170,10 @@ public:
 			// deallocator
 			std::vector<_deallocate_data>::iterator iter = _rvector_ptr->re_vector.begin();
 			while(iter != _rvector_ptr->re_vector.end()){
-				if(!std::binary_search(hvector.begin(), hvector.end(), iter->first)){
-					iter->second(iter->first);
+				if(!std::binary_search(hvector.begin(), hvector.end(), *iter)){
+					_fn_dealloc(*iter);
 
-					if(iter->first != _rvector_ptr->re_vector.back().first){
+					if(*iter != _rvector_ptr->re_vector.back()){
 						*iter = _rvector_ptr->re_vector.back();
 						_rvector_ptr->re_vector.pop_back();
 					}

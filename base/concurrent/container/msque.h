@@ -41,7 +41,7 @@ private:
 	typedef typename _Allocator::template rebind<_list>::other _list_alloc;
 		
 public:
-	msque(void){
+	msque(void) : _hazard_sys(boost::bind(&msque::put_node, this, _1)){
 		__list.store(get_list());
 	}
 
@@ -74,11 +74,6 @@ public:
 		_hazard_ptr * _hp = _hazard_sys.acquire();
 		_hp->_hazard = __list.load()->_end.load();
 		while(1){
-			if(_hp->_hazard != __list.load()->_end.load()){
-				_hp->_hazard = __list.load()->_end.load();
-				continue;
-			}
-
 			_list_node * next = _hp->_hazard->_next.load();
 
 			if(_hp->_hazard != __list.load()->_end.load()){
@@ -113,26 +108,14 @@ public:
 		_hazard_ptr * _hp_next = _hazard_sys.acquire();
 		_hp_begin->_hazard = __list.load()->_begin.load();
 		while(1){	
-			if(_hp_begin->_hazard != __list.load()->_begin.load()){
-				_hp_begin->_hazard = __list.load()->_begin.load();
-				continue;
-			}
-
-			_list_node * end = __list.load()->_end.load();
 			_hp_next->_hazard = _hp_begin->_hazard->_next.load();
-
+			
 			if(_hp_next->_hazard == 0){
 				ret = false;
 				goto end;
 			}
-			
+
 			if(_hp_begin->_hazard != __list.load()->_begin.load()){
-				_hp_begin->_hazard = __list.load()->_begin.load();
-				continue;
-			}
-			
-			if(end == _hp_begin->_hazard){
-				__list.load()->_end.compare_exchange_weak(end, _hp_next->_hazard);
 				_hp_begin->_hazard = __list.load()->_begin.load();
 				continue;
 			}
@@ -143,7 +126,6 @@ public:
 		}
 		data = _hp_next->_hazard->data;
 		_hazard_sys.retire(_hp_begin->_hazard, boost::bind(&Hemsleya::container::msque<T>::put_node, this, _1));
-
 		__list.load()->_size--;
 
 	end:
@@ -202,9 +184,10 @@ private:
 	boost::atomic<_list *> __list;
 	_list_alloc __list_alloc;
 	_node_alloc __node_alloc;
+	_Allocator __T_alloc;
+
 	_hazard_system _hazard_sys;
 
-	_Allocator __T_alloc;
 
 };
 

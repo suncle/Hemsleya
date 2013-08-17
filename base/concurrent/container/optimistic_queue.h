@@ -10,7 +10,7 @@
 #include <boost/atomic.hpp>
 #include <boost/pool/pool_alloc.hpp>
 
-#include <Hemsleya/container/detail/_hazard_ptr.h>
+#include <Hemsleya/base/concurrent/container/detail/_hazard_ptr.h>
 
 namespace Hemsleya{
 namespace container{
