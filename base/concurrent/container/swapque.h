@@ -88,38 +88,44 @@ public:
 			return false;
 		}
 
+		bool bRet = false;
+		_hazard_ptr * _hp_begin = _hazard_sys.acquire();
+		_hazard_ptr * _hp_next = _hazard_sys.acquire();
 		while(1){
 			boost::upgrade_lock<boost::shared_mutex> lock(__que.load()->_mu, boost::try_to_lock);
 			_que * _tmp_que = __que.load();
 			if (lock.owns_lock()){
-				_hazard_ptr * _hp_begin = _hazard_sys.acquire();
 				_hp_begin->_hazard = _tmp_que->_frond->_begin.load();
 				while(1){
 					if (_hp_begin->_hazard == _tmp_que->_frond->_end.load()){
 						if (_tmp_que->_size.load() == 0){
-							return false;
+							goto end;
 						}
 
 						boost::unique_lock<boost::shared_mutex> uniquelock(boost::move(lock));
 						std::swap(_tmp_que->_frond, _tmp_que->_back);
 						_hp_begin->_hazard = _tmp_que->_frond->_begin.load();
 						if (_hp_begin->_hazard == _tmp_que->_frond->_end.load()){
-							return false;
+							goto end;
 						}
 					}
 
-					_que_node * _next = _hp_begin->_hazard->_next;
-					if(_tmp_que->_frond->_begin.compare_exchange_strong(_hp_begin->_hazard, _next)){
-						data = _next->data;
+					_hp_next->_hazard = _hp_begin->_hazard->_next;
+					if(_tmp_que->_frond->_begin.compare_exchange_strong(_hp_begin->_hazard, _hp_next->_hazard)){
+						data = _hp_next->_hazard->data;
 						_hazard_sys.retire(_hp_begin->_hazard);
-						_hazard_sys.release(_hp_begin);
-						return true;
+						bRet = true;
+						goto end;
 					}
 				}
 			}
 		}
 
-		return true;
+	end:
+		_hazard_sys.release(_hp_begin);
+		_hazard_sys.release(_hp_next);
+
+		return bRet;
 	}
 
 private:

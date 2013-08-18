@@ -88,7 +88,6 @@ public:
 		detail::_hazard_ptr<list> * _plist = _hsys_list.acquire();
 		detail::_hazard_ptr<node> * _ptr_head = _hsys.acquire();
 		detail::_hazard_ptr<node> * _ptr_next = _hsys.acquire();
-		detail::_hazard_ptr<node> * _ptr_detail = _hsys.acquire();
 		while(1){
 			_plist->_hazard = _list.load();
 
@@ -102,6 +101,7 @@ public:
 			_ptr_next->_hazard = _ptr_head->_hazard->next.load();
 			if (_ptr_next->_hazard == 0){
 				node * nodenext;
+				detail::_hazard_ptr<node> * _ptr_detail = _hsys.acquire();
 				_ptr_detail->_hazard = _plist->_hazard->detail.load();
 				while((_ptr_head->_hazard == _plist->_hazard->head.load()) && (_ptr_detail->_hazard != _ptr_head->_hazard)){
 					nodenext = _ptr_detail->_hazard->prev.load();

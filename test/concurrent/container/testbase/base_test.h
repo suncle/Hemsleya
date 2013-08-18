@@ -37,12 +37,14 @@ private:
 		int thid = _data->thid;
 		base_test * pthis = _data->pthis;
 		test t;
+		clock_t begin = clock();
 		for(int i = 0; i < 100000; i++){
 			t.thid = thid;
 			t.num = i;
 			pthis->_que.push(t);
 		}
 		pthis->count--;
+		std::cout << "push end " << thid << "time " << clock() - begin << std::endl;
 		_endthread();
 	}
 
@@ -50,6 +52,7 @@ private:
 		base_test * pthis = (base_test * )_pthis;
 		test t;
 		bool bpop = false;
+		clock_t begin = clock();
 		while((bpop = pthis->_que.pop(t)) || pthis->count.load() > 0){
 			if (bpop){
 				if (pthis->back[t.thid].num != t.num){
@@ -61,6 +64,7 @@ private:
 			}
 		}
 		pthis->bpopend = true;
+		std::cout << "pop end time " << clock() - begin << std::endl;
 		_endthread();
 	}
 
