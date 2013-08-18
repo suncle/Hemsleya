@@ -54,7 +54,7 @@ public:
 	}
 
 	size_t size(){
-		return _list->size.load();
+		return _list.load()->size.load();
 	}
 
 	void push(const T & data){

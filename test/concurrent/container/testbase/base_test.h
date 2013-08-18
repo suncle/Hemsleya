@@ -76,6 +76,7 @@ public:
 			}
 			bpopend = false;
 
+			std::cout << "_que size" << _que.size() << std::endl;
 			begin = clock();
 			_beginthread(pop, 0, this);
 			for(int i = 0; i < 4; i++){
@@ -87,7 +88,7 @@ public:
 				_sleep(1);
 			}
 			runtime = clock() - begin;
-			std::cout << runtime << std::endl;
+			std::cout << "test time " << runtime << std::endl;
 		}
 	}
 	

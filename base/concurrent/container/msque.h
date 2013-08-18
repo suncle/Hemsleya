@@ -154,7 +154,7 @@ private:
 			_list_node * _tmp = _node;
 			_node = _node->_next;
 
-			_hazard_sys.retire(_tmp, boost::bind(&Hemsleya::container::msque<T>::put_node, this, _1));
+			_hazard_sys.retire(_tmp);
 		}while(_node != 0);
 		__list_alloc.deallocate(_p, 1);
 	}
