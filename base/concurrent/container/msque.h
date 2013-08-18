@@ -66,7 +66,7 @@ public:
 	void push(const T & data){
 		_list_node * _null = 0;
 		
-		_list_node * _node = 0;
+		_list_node * _node = get_node(data);
 		while(_node == 0){
 			_node = get_node(data);
 		}

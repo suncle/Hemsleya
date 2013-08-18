@@ -37,7 +37,7 @@ private:
 	typedef typename _Ax::template rebind<list>::other _Alloc_list;
 
 public:
-	optimistic_queue(){
+	optimistic_queue() : _hsys(boost::bind(&optimistic_queue::put_node, this, _1)), _hsys_list(boost::bind(&optimistic_queue::put_list, this, _1)) {
 		_list.store(get_list());
 	}
 
@@ -57,68 +57,60 @@ public:
 		return _list->size.load();
 	}
 
-	void push_front(const T & data){
+	void push(const T & data){
 		node * _new = get_node(data);
+		while(_new == 0){
+			_new = get_node(data);
+		}
 
 		detail::_hazard_ptr<list> * _plist = _hsys_list.acquire();
-		detail::_hazard_ptr<node> * _ptr_head = _hsys.acquire();
-		detail::_hazard_ptr<node> * _ptr_next = _hsys.acquire();
+		detail::_hazard_ptr<node> * _ptr_detail = _hsys.acquire();
 		while(1){
 			_plist->_hazard = _list.load();
+			_ptr_detail->_hazard = _plist->_hazard ->detail.load();
 
-			_ptr_head->_hazard = _plist->_hazard->head.load();
-			_ptr_next->_hazard = _ptr_head->_hazard->next.load();
-			
-			_new->prev = _ptr_head->_hazard;
-			_new->next = _ptr_next->_hazard;
+			_new->prev = _ptr_detail->_hazard;
 
-			if (_ptr_head->_hazard != _plist->_hazard->head.load()){
-				continue;
-			}
-
-			if (_ptr_head->_hazard->next.compare_exchange_weak(_ptr_next->_hazard, _new)){
-				if (_ptr_next->_hazard != 0){
-					_ptr_next->_hazard->prev.store(_new);
-				}
-				_plist->_hazard->size++;
+			if (_plist->_hazard ->detail.compare_exchange_weak(_ptr_detail->_hazard, _new)){
+				_ptr_detail->_hazard->next.store(_new);
+				_plist->_hazard ->size++;
 				break;
 			}
 		}
 
-		_hsys.release(_ptr_head);
-		_hsys.release(_ptr_next);
-
+		_hsys.release(_ptr_detail);
 		_hsys_list.release(_plist);
 	}
 
-	bool pop_front(T & data){
+	bool pop(T & data){
 		bool ret = true;
 		
 		detail::_hazard_ptr<list> * _plist = _hsys_list.acquire();
 		detail::_hazard_ptr<node> * _ptr_head = _hsys.acquire();
 		detail::_hazard_ptr<node> * _ptr_next = _hsys.acquire();
+		detail::_hazard_ptr<node> * _ptr_detail = _hsys.acquire();
 		while(1){
 			_plist->_hazard = _list.load();
 
 			_ptr_head->_hazard = _plist->_hazard->head.load();
+
+			if (_ptr_head->_hazard == _plist->_hazard->detail.load()){
+				ret = false;
+				break;
+			}
+
 			_ptr_next->_hazard = _ptr_head->_hazard->next.load();
-
 			if (_ptr_next->_hazard == 0){
-				ret = false;
-				break;
-			}
-
-			if (_ptr_next->_hazard == _plist->_hazard->detail.load()){
-				ret = false;
-				break;
-			}
-
-			if (_ptr_head->_hazard != _plist->_hazard->head.load()){
-				continue;
+				node * nodenext;
+				_ptr_detail->_hazard = _plist->_hazard->detail.load();
+				while((_ptr_head->_hazard == _plist->_hazard->head.load()) && (_ptr_detail->_hazard != _ptr_head->_hazard)){
+					nodenext = _ptr_detail->_hazard->prev.load();
+					nodenext->next.store(_ptr_detail->_hazard);
+					_ptr_detail->_hazard = nodenext;
+				}
 			}
 		
 			if (_plist->_hazard->head.compare_exchange_weak(_ptr_head->_hazard, _ptr_next->_hazard)){
-				_ptr_next->_hazard->prev.store(0);
 				data = _ptr_next->_hazard->data;
 				_hsys.retire(_ptr_head->_hazard, boost::bind(&optimistic_queue::put_node, this, _1));
 				_plist->_hazard->size--;
@@ -135,137 +127,29 @@ public:
 		return ret;
 	}
 
-	void push_back(const T & data){
-		node * _new = get_node(data);
-
-		detail::_hazard_ptr<list> * _plist = _hsys_list.acquire();
-		detail::_hazard_ptr<node> * _ptr_detail = _hsys.acquire();
-		while(1){
-			_plist->_hazard = _list.load();
-
-			_ptr_detail->_hazard = _plist->_hazard ->detail.load();
-
-			if (_ptr_detail->_hazard == 0){
-				_plist->_hazard->detail.store(_plist->_hazard->head.load());
-				_ptr_detail->_hazard = _plist->_hazard ->detail.load();
-			}
-
-			while(_ptr_detail->_hazard->next != 0){
-				_plist->_hazard ->detail.compare_exchange_weak(_ptr_detail->_hazard, _ptr_detail->_hazard->next);
-				_ptr_detail->_hazard = _plist->_hazard ->detail.load();
-			}
-
-			if (_ptr_detail->_hazard != _plist->_hazard ->detail.load()){
-				continue;
-			}
-
-			_new->prev = _ptr_detail->_hazard;
-
-			if (_ptr_detail->_hazard != _plist->_hazard ->detail.load()){
-				continue;
-			}
-
-			if (_plist->_hazard ->detail.compare_exchange_weak(_ptr_detail->_hazard, _new)){
-				_ptr_detail->_hazard->next.store(_new);
-				_plist->_hazard ->size++;
-				break;
-			}
-		}
-
-		_hsys.release(_ptr_detail);
-
-		_hsys_list.release(_plist);
-	}
-
-	bool pop_back(T & data){
-		bool ret = true;
-		
-		detail::_hazard_ptr<list> * _plist = _hsys_list.acquire();
-		detail::_hazard_ptr<node> * _ptr_detail = _hsys.acquire();
-		detail::_hazard_ptr<node> * _ptr_prev = _hsys.acquire();
-		while(1){
-			_plist->_hazard = _list.load();
-
-			_ptr_detail->_hazard = _plist->_hazard->detail.load();
-
-			if (_ptr_detail->_hazard == 0){
-				_plist->_hazard->detail.store(_plist->_hazard->head.load());
-				continue;
-			}
-
-			if(_ptr_detail->_hazard->next != 0){
-				_plist->_hazard ->detail.compare_exchange_weak(_ptr_detail->_hazard, _ptr_detail->_hazard->next);
-				continue;
-			}
-
-			if (_ptr_detail->_hazard != _plist->_hazard->detail.load()){
-				continue;
-			}
-
-			_ptr_prev->_hazard = _ptr_detail->_hazard->prev.load();
-
-			if (_ptr_detail->_hazard != _plist->_hazard->detail.load()){
-				continue;
-			}
-
-			if (_ptr_prev->_hazard == _plist->_hazard->head.load()){
-				ret = false;
-				break;
-			}
-			
-			if (_ptr_prev->_hazard == 0){
-				ret = false;
-				break;
-			}
-
-			if (_ptr_detail->_hazard != _plist->_hazard->detail.load()){
-				continue;
-			}
-		
-			if (_plist->_hazard->detail.compare_exchange_weak(_ptr_detail->_hazard, _ptr_prev->_hazard)){
-				data = _ptr_detail->_hazard->data;
-				_hsys.retire(_ptr_detail->_hazard, boost::bind(&optimistic_queue::put_node, this, _1));
-				
-				_ptr_prev->_hazard->next.compare_exchange_weak(_ptr_detail->_hazard, 0);
-				
-				_plist->_hazard->size--;
-				
-				break;
-			}
-		}
-
-		_hsys.release(_ptr_detail);
-		_hsys.release(_ptr_prev);
-
-		_hsys_list.release(_plist);
-
-		return ret;
-	}
-
 private:
 	node * get_node(){
-		node * _node = new node;//_alloc_node.allocate(1);
-		//::new (_node) node();
+		node * _node = _alloc_node.allocate(1);
+		::new (_node) node();
 
 		return _node;
 	}
 
 	node * get_node(const T & data){
-		node * _node = new node(data);//_alloc_node.allocate(1);
-		//::new (_node) node(data);
+		node * _node = _alloc_node.allocate(1);
+		::new (_node) node(data);
 
 		return _node;
 	}
 
 	void put_node(node * _node){
-		delete _node;
-		//_node->~node();
-		//_alloc_node.deallocate(_node, 1);
+		_node->~node();
+		_alloc_node.deallocate(_node, 1);
 	}
 
 	list * get_list(){
-		list * _list = new list;//_alloc_list.allocate(1);
-		//::new (_list) list();
+		list * _list = _alloc_list.allocate(1);
+		::new (_list) list();
 
 		_list->size.store(0);
 
