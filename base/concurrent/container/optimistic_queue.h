@@ -112,7 +112,7 @@ public:
 		
 			if (_plist->_hazard->head.compare_exchange_weak(_ptr_head->_hazard, _ptr_next->_hazard)){
 				data = _ptr_next->_hazard->data;
-				_hsys.retire(_ptr_head->_hazard, boost::bind(&optimistic_queue::put_node, this, _1));
+				_hsys.retire(_ptr_head->_hazard);
 				_plist->_hazard->size--;
 				
 				break;

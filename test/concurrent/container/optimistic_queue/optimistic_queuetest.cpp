@@ -1,5 +1,5 @@
 /*
- *  optimistic_queuetest.c
+ *  optimistic_queuetest.cpp
  *  Created on: 2013-8-17
  *	    Author: qianqians
  *  optimistic_queue»ù×¼²âÊÔ

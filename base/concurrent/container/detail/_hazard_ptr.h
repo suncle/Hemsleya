@@ -130,7 +130,7 @@ public:
 	}
 
 public:
-	void retire(T * p,  fn_dealloc fn){
+	void retire(T * p){
 		// get tss rvector
 		recover_list * _rvector_ptr = 0;
 		while(1){

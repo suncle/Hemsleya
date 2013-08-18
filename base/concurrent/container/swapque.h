@@ -46,7 +46,7 @@ private:
 	typedef typename _Allocator::template rebind<_que>::other _que_alloc;
 
 public:
-	swapque(){
+	swapque() : _hazard_sys(boost::bind(&swapque::put_node, this, _1)){
 		__que.store(get_que());
 	}
 
@@ -65,7 +65,6 @@ public:
 	void clear(){
 		_que * _new_que = get_que();
 		_que * _old_que = __que.exchange(_new_que);
-		boost::unique_lock<boost::shared_mutex> lock(_old_que->_mu);
 		put_que(_old_que);
 	}
 
@@ -74,8 +73,8 @@ public:
 		while((_node = get_node(data)) == 0);
 
 		while(1){
+			boost::shared_lock<boost::shared_mutex> lock(__que.load()->_mu, boost::try_to_lock);
 			_que * _tmp_que = __que.load();
-			boost::shared_lock<boost::shared_mutex> lock(_tmp_que->_mu, boost::try_to_lock);
 			if (lock.owns_lock()){
 				_que_node * _old_end = _tmp_que->_back->_end.exchange(_node);
 				_old_end->_next = _node;
@@ -90,8 +89,8 @@ public:
 		}
 
 		while(1){
+			boost::upgrade_lock<boost::shared_mutex> lock(__que.load()->_mu, boost::try_to_lock);
 			_que * _tmp_que = __que.load();
-			boost::upgrade_lock<boost::shared_mutex> lock(_tmp_que->_mu, boost::try_to_lock);
 			if (lock.owns_lock()){
 				_hazard_ptr * _hp_begin = _hazard_sys.acquire();
 				_hp_begin->_hazard = _tmp_que->_frond->_begin.load();
@@ -112,6 +111,9 @@ public:
 					_que_node * _next = _hp_begin->_hazard->_next;
 					if(_tmp_que->_frond->_begin.compare_exchange_strong(_hp_begin->_hazard, _next)){
 						data = _next->data;
+						_hazard_sys.retire(_hp_begin->_hazard);
+						_hazard_sys.release(_hp_begin);
+						return true;
 					}
 				}
 			}
@@ -123,6 +125,8 @@ public:
 private:
 	_que * get_que(){
 		_que * __que = __que_alloc.allocate(1);
+		::new(__que) _que();
+
 		__que->_size = 0;
 
 		__que->_frond = __mirco_que_alloc.allocate(1);
@@ -141,12 +145,14 @@ private:
 	}
 
 	void put_que(_que * _p){
+		boost::unique_lock<boost::shared_mutex> lock(_p->_mu);
+
 		_que_node * _node = _p->_frond->_begin;
 		do{
 			_que_node * _tmp = _node;
 			_node = _node->_next;
 
-			_hazard_sys.retire(_tmp, boost::bind(&Hemsleya::container::swapque<T>::put_node, this, _1));
+			_hazard_sys.retire(_tmp);
 		}while(_node != 0);
 		__mirco_que_alloc.deallocate(_p->_frond, 1);
 
@@ -155,15 +161,19 @@ private:
 			_que_node * _tmp = _node;
 			_node = _node->_next;
 
-			_hazard_sys.retire(_tmp, boost::bind(&Hemsleya::container::swapque<T>::put_node, this, _1));
+			_hazard_sys.retire(_tmp);
 		}while(_node != 0);
 		__mirco_que_alloc.deallocate(_p->_back, 1);
 
+		lock.unlock();
+		_p->~_que();
 		__que_alloc.deallocate(_p, 1);
 	}
 
 	_que_node * get_node(const T & data){
 		_que_node * _node = __node_alloc.allocate(1);
+		::new(_node) _que_node();
+
 		_node->data = data;
 		_node->_next = 0;
 		
@@ -171,6 +181,7 @@ private:
 	}
 
 	void put_node(_que_node * _p){
+		_p->~_que_node();
 		__node_alloc.deallocate(_p, 1);
 	}
 

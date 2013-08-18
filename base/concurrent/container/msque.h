@@ -125,7 +125,7 @@ public:
 			}
 		}
 		data = _hp_next->_hazard->data;
-		_hazard_sys.retire(_hp_begin->_hazard, boost::bind(&Hemsleya::container::msque<T>::put_node, this, _1));
+		_hazard_sys.retire(_hp_begin->_hazard);
 		__list.load()->_size--;
 
 	end:
