@@ -3,6 +3,8 @@
 
 an open-source C++ library developed by qianqians
 
+修复ringque bug,完成ringque基础测试
+
 完成无锁队列基准测试用例
 完成msque,optimistic_queue,swapque测试
 
