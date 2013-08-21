@@ -14,18 +14,57 @@
 namespace Hemsleya{
 namespace container{
 
-template<typename T, typename _Allocator = boost::pool_allocator<T>>
+template<typename T, typename _Allocator = boost::pool_allocator<T>, unsigned detailsize = 1024 >
 class ringque{ 
+private:
+	typedef typename _Allocator::template rebind<boost::atomic<typename T *> >::other _Allque;
+	typedef boost::atomic<typename T *> * que;
+
 public:
 	ringque(){
-		_que = (boost::atomic<typename T *>*)malloc(sizeof(boost::atomic<typename T *>)*1024);
+		_que = get_que(detailsize);
+		
 		_push_slide.store(0);
-		_que_max = 1024;
+		_que_max = detailsize;
 		_pop_slide.store(_que_max);
+		_size.store(0);
 	}
 
 	~ringque(){
-		free(_que);
+		put_que(_que, _que_max);
+	}
+
+	void clear(){
+		boost::unique_lock<boost::shared_mutex> lock(_mu);
+
+		boost::atomic<typename T *> * _tmp = _que;
+		boost::uint32_t _tmp_push_slide = _push_slide.load();
+		boost::uint32_t _tmp_pop_slide = _pop_slide.load();
+
+		_que = get_que(_que_max);
+		_push_slide.store(0);
+		_pop_slide.store(_que_max);
+		_size.store(0);
+
+		lock.unlock();
+
+		while(1){
+			if (_tmp_pop_slide == _que_max){
+				_tmp_pop_slide = 0;
+			}
+
+			if (_tmp_pop_slide != _tmp_push_slide){
+				break;
+			}
+
+			_tmp[_tmp_pop_slide]->~T();
+			_T_alloc.deallocate(_tmp[_tmp_pop_slide], 1);
+		}
+		put_que(_tmp, _que_max);
+	}
+
+	std::size_t size(){
+		return _size.load();
 	}
 
 	void push(T data){
@@ -54,6 +93,7 @@ public:
 				T * _tmp = _T_alloc.allocate(1);
 				::new (_tmp) T(data);
 				_que[slide].store(_tmp);
+				_size++;
 				break;
 			}
 		}
@@ -66,13 +106,13 @@ public:
 		unsigned int slide = _pop_slide.load();
 		unsigned int newslide = 0;
 		while(1){
-			if (slide == _push_slide.load()){
-				break;
-			}
-
-			newslide = slide+1;
+			newslide = (slide == _que_max) ? 0 : (slide + 1);
 			if (newslide == _que_max){
 				newslide = 0;
+			}
+			
+			if (newslide == _push_slide.load()){
+				break;
 			}
 
 			if (_pop_slide.compare_exchange_strong(slide, newslide)){
@@ -80,6 +120,7 @@ public:
 				data = *_tmp;
 				_tmp->~T();
 				_T_alloc.deallocate(_tmp, 1);
+				_size--;
 				return true;
 			}
 		}
@@ -110,12 +151,24 @@ private:
 	}
 
 private:
+	que get_que(uint32_t size){
+		que _que = _que_alloc.allocate(size);
+
+		return _que;
+	}
+
+	void put_que(que _que, uint32_t size){
+		_que_alloc.deallocate(_que, size);
+	}
+
+private:
 	boost::shared_mutex _mu;
-	boost::atomic<typename T *> * _que;
-	boost::atomic_uint _push_slide, _pop_slide;
+	que _que;
+	boost::atomic_uint _push_slide, _pop_slide, _size;
 	unsigned int _que_max;
 	
 	_Allocator _T_alloc;
+	_Allque _que_alloc;
 };
 
 }//container
