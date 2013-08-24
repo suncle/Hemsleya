@@ -37,11 +37,13 @@ private:
 	
 	typedef Hemsleya::container::detail::_hazard_ptr<_list_node> _hazard_ptr;
 	typedef Hemsleya::container::detail::_hazard_system<_list_node> _hazard_system;
+	typedef Hemsleya::container::detail::_hazard_ptr<_list> _hazard_list_ptr;
+	typedef Hemsleya::container::detail::_hazard_system<_list> _hazard_list_;
 	typedef typename _Allocator::template rebind<_list_node>::other _node_alloc;
 	typedef typename _Allocator::template rebind<_list>::other _list_alloc;
 		
 public:
-	msque(void) : _hazard_sys(boost::bind(&msque::put_node, this, _1)){
+	msque(void) : _hazard_sys(boost::bind(&msque::put_node, this, _1)), _hazard_list(boost::bind(&msque::put_list, this, _1)){
 		__list.store(get_list());
 	}
 
@@ -64,73 +66,79 @@ public:
 	}
 
 	void push(const T & data){
-		_list_node * _null = 0;
-		
 		_list_node * _node = get_node(data);
 		while(_node == 0){
 			_node = get_node(data);
 		}
 
-		_hazard_ptr * _hp = _hazard_sys.acquire();
-		_hp->_hazard = __list.load()->_end.load();
+		_hazard_list_ptr * _hp_list;
+		_hazard_list.acquire(&_hp_list, 1);
+		_hazard_ptr * _hp;
+		_hazard_sys.acquire(&_hp, 1);
 		while(1){
+			_hp_list->_hazard = __list.load();
+
+			_hp->_hazard = _hp_list->_hazard->_end.load();
+
 			_list_node * next = _hp->_hazard->_next.load();
 
-			if(_hp->_hazard != __list.load()->_end.load()){
-				_hp->_hazard = __list.load()->_end.load();
+			if(_hp->_hazard != _hp_list->_hazard->_end.load()){
+				_hp->_hazard = _hp_list->_hazard->_end.load();
 				continue;
 			}
 			 
 			if(next != 0){
-				__list.load()->_end.compare_exchange_weak(_hp->_hazard, next);
-				_hp->_hazard = __list.load()->_end.load();
+				_hp_list->_hazard->_end.compare_exchange_weak(_hp->_hazard, next);
+				_hp->_hazard = _hp_list->_hazard->_end.load();
 				continue;
 			}
 
+			_list_node * _null = 0;
 			if (_hp->_hazard->_next.compare_exchange_weak(_null, _node)){
 				break;
-			}else{
-				_null = 0;
-				_hp->_hazard = __list.load()->_end.load();
 			}
 		}
-		__list.load()->_end.compare_exchange_weak(_hp->_hazard, _node); 
+		_hp_list->_hazard->_end.compare_exchange_weak(_hp->_hazard, _node); 
 
 		_hazard_sys.release(_hp);
 
-		__list.load()->_size++;
+		_hp_list->_hazard->_size++;
 	}
 
 	bool pop(T & data){
 		bool ret = true;
 		
-		_hazard_ptr * _hp_begin = _hazard_sys.acquire();
-		_hazard_ptr * _hp_next = _hazard_sys.acquire();
-		_hp_begin->_hazard = __list.load()->_begin.load();
+		_hazard_list_ptr * _hp_list;
+		_hazard_list.acquire(&_hp_list, 1);
+		_hazard_ptr * _hp_node[2];
+		_hazard_sys.acquire(_hp_node, 2);
 		while(1){	
-			_hp_next->_hazard = _hp_begin->_hazard->_next.load();
+			_hp_list->_hazard = __list.load();
+
+			_hp_node[0]->_hazard = _hp_list->_hazard->_begin.load();
+			_hp_node[1]->_hazard = _hp_node[0]->_hazard->_next.load();
 			
-			if(_hp_next->_hazard == 0){
+			if(_hp_node[1]->_hazard == 0){
 				ret = false;
 				goto end;
 			}
 
-			if(_hp_begin->_hazard != __list.load()->_begin.load()){
-				_hp_begin->_hazard = __list.load()->_begin.load();
+			if(_hp_node[0]->_hazard != _hp_list->_hazard->_begin.load()){
+				_hp_node[1]->_hazard = _hp_list->_hazard->_begin.load();
 				continue;
 			}
 
-			if(__list.load()->_begin.compare_exchange_strong(_hp_begin->_hazard, _hp_next->_hazard)){
+			if(_hp_list->_hazard->_begin.compare_exchange_strong(_hp_node[0]->_hazard, _hp_node[1]->_hazard)){
 				break;
 			}
 		}
-		data = _hp_next->_hazard->data;
-		_hazard_sys.retire(_hp_begin->_hazard);
-		__list.load()->_size--;
+		data = _hp_node[1]->_hazard->data;
+		_hazard_sys.retire(_hp_node[0]->_hazard);
+		_hp_list->_hazard->_size--;
 
 	end:
-		_hazard_sys.release(_hp_begin);
-		_hazard_sys.release(_hp_next);
+		_hazard_sys.release(_hp_node[0]);
+		_hazard_sys.release(_hp_node[1]);
 
 		return ret;
 	}
@@ -187,7 +195,7 @@ private:
 	_Allocator __T_alloc;
 
 	_hazard_system _hazard_sys;
-
+	_hazard_list_ _hazard_list;
 
 };
 

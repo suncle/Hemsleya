@@ -105,23 +105,25 @@ private:
 	}
 	
 public:
-	_hazard_ptr_ * acquire(){
-		// try to reuse a retired hazard ptr
-		for(_list_node * _node = _head; _node; _node = _node->next){
-			if (_node->_hazard._active.exchange(0) == 0)
-				continue;
-			return &_node->_hazard;
+	void acquire(_hazard_ptr_ ** ptr, uint32_t size ){
+		while(size > 0){
+			// try to reuse a retired hazard ptr
+			for(_list_node * _node = _head; _node; _node = _node->next){
+				if (_node->_hazard._active.exchange(0) == 1){
+					break;
+				}
+			}
+
+			// alloc a new node 
+			_list_node * _new_node = _get_node();
+			_new_node->_hazard._active.store(0);
+			// increment the list length
+			llen++;
+			// push into list
+			_new_node->next = _head.exchange(_new_node);
+
+			ptr[--size] = &(_new_node->_hazard);
 		}
-
-		// alloc a new node 
-		_list_node * _new_node = _get_node();
-		_new_node->_hazard._active.store(0);
-		// increment the list length
-		llen++;
-		// push into list
-		_new_node->next = _head.exchange(_new_node);
-
-		return &(_new_node->_hazard);
 	}
 
 	void release(_hazard_ptr_ * ptr){

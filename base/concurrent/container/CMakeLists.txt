@@ -9,7 +9,7 @@ SET(header_files
     concurrent_interval_table.h
     msque.h
     no_blocking_pool.h
-    optimistic_queue.h
+    optimisticque.h
     ringque.h
     swapque.h
 )

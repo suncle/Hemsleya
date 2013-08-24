@@ -1,11 +1,11 @@
 /*
- * optimistic_queue.h
+ * optimisticque.h
  * Created on: 2013-5-6
  *	   Author: qianqians
- * optimistic_queue:lock-free deque
+ * optimisticque:lock-free deque
  */
-#ifndef _OPTIMISTIC_QUEUE_H
-#define _OPTIMISTIC_QUEUE_H
+#ifndef _optimisticque_H
+#define _optimisticque_H
 
 #include <boost/atomic.hpp>
 #include <boost/pool/pool_alloc.hpp>
@@ -16,7 +16,7 @@ namespace Hemsleya{
 namespace container{
 
 template<class T, class _Ax = boost::pool_allocator<T> >
-class optimistic_queue{
+class optimisticque{
 private:
 	struct node{
 		node() : next(0), prev(0){}
@@ -37,11 +37,11 @@ private:
 	typedef typename _Ax::template rebind<list>::other _Alloc_list;
 
 public:
-	optimistic_queue() : _hsys(boost::bind(&optimistic_queue::put_node, this, _1)), _hsys_list(boost::bind(&optimistic_queue::put_list, this, _1)) {
+	optimisticque() : _hsys(boost::bind(&optimisticque::put_node, this, _1)), _hsys_list(boost::bind(&optimisticque::put_list, this, _1)) {
 		_list.store(get_list());
 	}
 
-	~optimistic_queue(){
+	~optimisticque(){
 		put_list(_list.load());
 	}
 
@@ -63,8 +63,10 @@ public:
 			_new = get_node(data);
 		}
 
-		detail::_hazard_ptr<list> * _plist = _hsys_list.acquire();
-		detail::_hazard_ptr<node> * _ptr_detail = _hsys.acquire();
+		detail::_hazard_ptr<list> * _plist;
+		_hsys_list.acquire(&_plist, 1);
+		detail::_hazard_ptr<node> * _ptr_detail;
+		_hsys.acquire(&_ptr_detail, 1);
 		while(1){
 			_plist->_hazard = _list.load();
 			_ptr_detail->_hazard = _plist->_hazard ->detail.load();
@@ -85,42 +87,44 @@ public:
 	bool pop(T & data){
 		bool ret = true;
 		
-		detail::_hazard_ptr<list> * _plist = _hsys_list.acquire();
-		detail::_hazard_ptr<node> * _ptr_head = _hsys.acquire();
-		detail::_hazard_ptr<node> * _ptr_next = _hsys.acquire();
+		detail::_hazard_ptr<list> * _plist;
+		_hsys_list.acquire(&_plist, 1);
+		detail::_hazard_ptr<node> * _ptr_node[2];
+		_hsys.acquire(_ptr_node, 2);
 		while(1){
 			_plist->_hazard = _list.load();
 
-			_ptr_head->_hazard = _plist->_hazard->head.load();
+			_ptr_node[0]->_hazard = _plist->_hazard->head.load();
 
-			if (_ptr_head->_hazard == _plist->_hazard->detail.load()){
+			if (_ptr_node[0]->_hazard == _plist->_hazard->detail.load()){
 				ret = false;
 				break;
 			}
 
-			_ptr_next->_hazard = _ptr_head->_hazard->next.load();
-			if (_ptr_next->_hazard == 0){
+			_ptr_node[1]->_hazard = _ptr_node[0]->_hazard->next.load();
+			if (_ptr_node[1]->_hazard == 0){
 				node * nodenext;
-				detail::_hazard_ptr<node> * _ptr_detail = _hsys.acquire();
+				detail::_hazard_ptr<node> * _ptr_detail;
+				_hsys.acquire(&_ptr_detail, 1);
 				_ptr_detail->_hazard = _plist->_hazard->detail.load();
-				while((_ptr_head->_hazard == _plist->_hazard->head.load()) && (_ptr_detail->_hazard != _ptr_head->_hazard)){
+				while((_ptr_node[0]->_hazard == _plist->_hazard->head.load()) && (_ptr_detail->_hazard != _ptr_node[0]->_hazard)){
 					nodenext = _ptr_detail->_hazard->prev.load();
 					nodenext->next.store(_ptr_detail->_hazard);
 					_ptr_detail->_hazard = nodenext;
 				}
 			}
 		
-			if (_plist->_hazard->head.compare_exchange_weak(_ptr_head->_hazard, _ptr_next->_hazard)){
-				data = _ptr_next->_hazard->data;
-				_hsys.retire(_ptr_head->_hazard);
+			if (_plist->_hazard->head.compare_exchange_weak(_ptr_node[0]->_hazard, _ptr_node[1]->_hazard)){
+				data = _ptr_node[1]->_hazard->data;
+				_hsys.retire(_ptr_node[1]->_hazard);
 				_plist->_hazard->size--;
 				
 				break;
 			}
 		}
 
-		_hsys.release(_ptr_head);
-		_hsys.release(_ptr_next);
+		_hsys.release(_ptr_node[0]);
+		_hsys.release(_ptr_node[1]);
 
 		_hsys_list.release(_plist);
 
@@ -185,4 +189,4 @@ private:
 }// container
 }// Hemsleya
 
-#endif //_OPTIMISTIC_QUEUE_H
+#endif //_optimisticque_H

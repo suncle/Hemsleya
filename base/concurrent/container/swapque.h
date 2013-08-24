@@ -41,12 +41,14 @@ private:
 
 	typedef Hemsleya::container::detail::_hazard_ptr<_que_node> _hazard_ptr;
 	typedef Hemsleya::container::detail::_hazard_system<_que_node> _hazard_system;
+	typedef Hemsleya::container::detail::_hazard_ptr<_que> _hazard_que_ptr;
+	typedef Hemsleya::container::detail::_hazard_system<_que> _hazard_que_system;
 	typedef typename _Allocator::template rebind<_que_node>::other _node_alloc;
 	typedef typename _Allocator::template rebind<_mirco_que>::other _mirco_que_alloc;
 	typedef typename _Allocator::template rebind<_que>::other _que_alloc;
 
 public:
-	swapque() : _hazard_sys(boost::bind(&swapque::put_node, this, _1)){
+	swapque() : _hazard_sys(boost::bind(&swapque::put_node, this, _1)), _hazard_que_sys(boost::bind(&swapque::put_que, this, _1)){
 		__que.store(get_que());
 	}
 
@@ -69,15 +71,22 @@ public:
 	}
 
 	void push(const T & data){
-		_que_node * _node = 0;
-		while((_node = get_node(data)) == 0);
+		_que_node * _node = get_node(data);
+		while(_node == 0){
+			_node = get_node(data);
+		}
 
+		_hazard_que_ptr * _hazard_que;
+		_hazard_que_sys.acquire(&_hazard_que, 1);	
 		while(1){
-			boost::shared_lock<boost::shared_mutex> lock(__que.load()->_mu, boost::try_to_lock);
-			_que * _tmp_que = __que.load();
+			_hazard_que->_hazard = __que.load();
+			boost::shared_lock<boost::shared_mutex> lock(_hazard_que->_hazard->_mu, boost::try_to_lock);
+
 			if (lock.owns_lock()){
-				_que_node * _old_end = _tmp_que->_back->_end.exchange(_node);
+				_que_node * _old_end = _hazard_que->_hazard->_back->_end.exchange(_node);
 				_old_end->_next = _node;
+				_hazard_que->_hazard->_size++;
+
 				break;
 			}
 		}
@@ -89,31 +98,36 @@ public:
 		}
 
 		bool bRet = false;
-		_hazard_ptr * _hp_begin = _hazard_sys.acquire();
-		_hazard_ptr * _hp_next = _hazard_sys.acquire();
+
+		_hazard_que_ptr * _hazard_que;
+		_hazard_que_sys.acquire(&_hazard_que, 1);	
+		_hazard_ptr * _hp_node[2];
+		_hazard_sys.acquire(_hp_node, 2);
 		while(1){
-			boost::upgrade_lock<boost::shared_mutex> lock(__que.load()->_mu, boost::try_to_lock);
-			_que * _tmp_que = __que.load();
+			_hazard_que->_hazard = __que.load();
+			boost::upgrade_lock<boost::shared_mutex> lock(_hazard_que->_hazard->_mu, boost::try_to_lock);
+			
 			if (lock.owns_lock()){
-				_hp_begin->_hazard = _tmp_que->_frond->_begin.load();
+				_hp_node[0]->_hazard = _hazard_que->_hazard->_frond->_begin.load();
 				while(1){
-					if (_hp_begin->_hazard == _tmp_que->_frond->_end.load()){
-						if (_tmp_que->_size.load() == 0){
+					if (_hp_node[0]->_hazard == _hazard_que->_hazard->_frond->_end.load()){
+						if (_hazard_que->_hazard->_size.load() == 0){
 							goto end;
 						}
 
 						boost::unique_lock<boost::shared_mutex> uniquelock(boost::move(lock));
-						std::swap(_tmp_que->_frond, _tmp_que->_back);
-						_hp_begin->_hazard = _tmp_que->_frond->_begin.load();
-						if (_hp_begin->_hazard == _tmp_que->_frond->_end.load()){
+						std::swap(_hazard_que->_hazard->_frond, _hazard_que->_hazard->_back);
+						_hp_node[0]->_hazard = _hazard_que->_hazard->_frond->_begin.load();
+						if (_hp_node[0]->_hazard == _hazard_que->_hazard->_frond->_end.load()){
 							goto end;
 						}
 					}
 
-					_hp_next->_hazard = _hp_begin->_hazard->_next;
-					if(_tmp_que->_frond->_begin.compare_exchange_strong(_hp_begin->_hazard, _hp_next->_hazard)){
-						data = _hp_next->_hazard->data;
-						_hazard_sys.retire(_hp_begin->_hazard);
+					_hp_node[1]->_hazard = _hp_node[0]->_hazard->_next;
+					if(_hazard_que->_hazard->_frond->_begin.compare_exchange_strong(_hp_node[0]->_hazard, _hp_node[1]->_hazard)){
+						data = _hp_node[1]->_hazard->data;
+						_hazard_sys.retire(_hp_node[0]->_hazard);
+						_hazard_que->_hazard->_size--;
 						bRet = true;
 						goto end;
 					}
@@ -122,8 +136,10 @@ public:
 		}
 
 	end:
-		_hazard_sys.release(_hp_begin);
-		_hazard_sys.release(_hp_next);
+		_hazard_sys.release(_hp_node[0]);
+		_hazard_sys.release(_hp_node[1]);
+
+		_hazard_que_sys.release(_hazard_que);
 
 		return bRet;
 	}
@@ -196,7 +212,9 @@ private:
 	_que_alloc __que_alloc;
 	_mirco_que_alloc __mirco_que_alloc;
 	_node_alloc __node_alloc;
+
 	_hazard_system _hazard_sys;
+	_hazard_que_system _hazard_que_sys;
 
 };	
 	
