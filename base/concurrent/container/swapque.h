@@ -72,9 +72,6 @@ public:
 
 	void push(const T & data){
 		_que_node * _node = get_node(data);
-		while(_node == 0){
-			_node = get_node(data);
-		}
 
 		_hazard_que_ptr * _hazard_que;
 		_hazard_que_sys.acquire(&_hazard_que, 1);	
@@ -147,6 +144,7 @@ public:
 private:
 	_que * get_que(){
 		_que * __que = __que_alloc.allocate(1);
+		while(__que == 0){__que = __que_alloc.allocate(1);};
 		::new(__que) _que();
 
 		__que->_size = 0;
@@ -194,6 +192,7 @@ private:
 
 	_que_node * get_node(const T & data){
 		_que_node * _node = __node_alloc.allocate(1);
+		while(_node == 0){_node = __node_alloc.allocate(1);};
 		::new(_node) _que_node();
 
 		_node->data = data;

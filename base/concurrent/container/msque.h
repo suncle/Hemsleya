@@ -67,9 +67,6 @@ public:
 
 	void push(const T & data){
 		_list_node * _node = get_node(data);
-		while(_node == 0){
-			_node = get_node(data);
-		}
 
 		_hazard_list_ptr * _hp_list;
 		_hazard_list.acquire(&_hp_list, 1);
@@ -146,6 +143,9 @@ public:
 private:
 	_list * get_list(){
 		_list * __list = __list_alloc.allocate(1);
+		while(__list == 0){__list = __list_alloc.allocate(1);}
+		new (__list) _list();
+
 		__list->_size = 0;
 
 		_list_node * _node = get_node();
@@ -169,7 +169,9 @@ private:
 
 	_list_node * get_node(){
 		_list_node * _node = __node_alloc.allocate(1);
+		while(_node == 0){_node = __node_alloc.allocate(1);}
 		new (_node) _list_node();
+		
 		_node->_next = 0;
 		
 		return _node;
@@ -177,7 +179,9 @@ private:
 
 	_list_node * get_node(const T & data){
 		_list_node * _node = __node_alloc.allocate(1);
+		while(_node == 0){_node = __node_alloc.allocate(1);}
 		new (_node) _list_node(data);
+
 		_node->_next = 0;
 		
 		return _node;

@@ -153,6 +153,7 @@ private:
 private:
 	que get_que(uint32_t size){
 		que _que = _que_alloc.allocate(size);
+		while(_que == 0){_que = _que_alloc.allocate(size);};
 
 		return _que;
 	}

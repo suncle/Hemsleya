@@ -59,9 +59,6 @@ public:
 
 	void push(const T & data){
 		node * _new = get_node(data);
-		while(_new == 0){
-			_new = get_node(data);
-		}
 
 		detail::_hazard_ptr<list> * _plist;
 		_hsys_list.acquire(&_plist, 1);
@@ -134,14 +131,22 @@ public:
 private:
 	node * get_node(){
 		node * _node = _alloc_node.allocate(1);
+		while(_node == 0){_node = _alloc_node.allocate(1);};
 		::new (_node) node();
+
+		_node->next = 0;
+		_node->prev = 0;
 
 		return _node;
 	}
 
 	node * get_node(const T & data){
 		node * _node = _alloc_node.allocate(1);
+		while(_node == 0){_node = _alloc_node.allocate(1);};
 		::new (_node) node(data);
+
+		_node->next = 0;
+		_node->prev = 0;
 
 		return _node;
 	}
@@ -153,6 +158,7 @@ private:
 
 	list * get_list(){
 		list * _list = _alloc_list.allocate(1);
+		while(_list == 0){_list = _alloc_list.allocate(1);};
 		::new (_list) list();
 
 		_list->size.store(0);
