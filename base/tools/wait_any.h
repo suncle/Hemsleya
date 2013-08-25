@@ -11,14 +11,14 @@
 
 #include <boost/function.hpp>
 
-#include <angelica/container/concurrent_interval_table.h>
+#include <Hemsleya/base/concurrent/container/small_hash_map.h>
 
-namespace angelica{
-namespace base{
+namespace Hemsleya{
+namespace tools{
 
-extern angelica::container::concurrent_interval_table<std::string, void*> wait_data;
+extern Hemsleya::container::small_hash_map<std::string, void*> wait_data;
 
-bool addwait(std::string key, void * data);
+void addwait(std::string key, void * data);
 
 void* getwait(std::string key);
 
@@ -26,7 +26,7 @@ void wait_any(std::string key, boost::function<bool() > WaitConditionHandle, boo
 
 void wait();
 
-}// base
-}// angelica
+}// tools
+}// Hemsleya
 
 #endif //_WAIT_ANY_H

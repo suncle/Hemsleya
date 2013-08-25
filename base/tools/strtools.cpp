@@ -6,7 +6,7 @@
  */
 #include "strtools.h"
 
-namespace angelica{
+namespace Hemsleya{
 namespace strtools{
 
 #ifdef _WIN32
@@ -65,7 +65,7 @@ std::string utf82str(std::string utf8){
 	return str2othercp(utf8, CP_UTF8, acp);
 }
 
-std::string int2str(Integer num){
+std::string int2str(int32_t num){
 	std::string strNum = "0";
 	if (num < 0){
 		strNum = "-";
@@ -86,8 +86,29 @@ std::string int2str(Integer num){
 	return strNum;
 }
 
-Integer str2int(std::string num_str){
-	Integer ret = 0;
+std::string int2str(int64_t num){
+	std::string strNum = "0";
+	if (num < 0){
+		strNum = "-";
+	}
+
+	int modulo = 0;
+	do{
+		modulo = num%10;
+		num = num/10;
+		
+		strNum.insert(strNum.begin(), '0'+modulo);
+			
+	}while(num != 0);
+	if (num > 0){
+		strNum.erase(strNum.begin());
+	}
+
+	return strNum;
+}
+
+int64_t str2int(std::string num_str){
+	int64_t ret = 0;
 	
 	unsigned int i = 0;
 	if (num_str.front() == '-'){
@@ -104,9 +125,9 @@ Integer str2int(std::string num_str){
 	return ret;
 }
 
-std::string uint2str(UInteger num){
+std::string uint2str(uint32_t num){
 	std::string strNum = "0";
-	UInteger quotient = 0, modulo = 0;
+	uint32_t quotient = 0, modulo = 0;
 	do{
 		quotient = num/10;
 		modulo = num%10;
@@ -119,8 +140,23 @@ std::string uint2str(UInteger num){
 	return strNum;
 }
 
-UInteger str2uint(std::string num_str){
-	UInteger ret = 0;
+std::string uint2str(uint64_t num){
+	std::string strNum = "0";
+	uint64_t quotient = 0, modulo = 0;
+	do{
+		quotient = num/10;
+		modulo = num%10;
+		
+		strNum.insert(strNum.begin(), (char)('0'+modulo));
+			
+	}while(quotient != 0);
+	strNum.erase(strNum.begin());
+
+	return strNum;
+}
+
+uint64_t str2uint(std::string num_str){
+	uint64_t ret = 0;
 	for(unsigned int i = 0; i < num_str.size(); i++){
 		ret *= 10;
 		ret += num_str.at(i) - '0';
@@ -129,20 +165,22 @@ UInteger str2uint(std::string num_str){
 	return ret;
 }
 
-std::string float2str(Float num){
+std::string float2str(double num){
 	char buff[256];
 	sprintf_s(buff, 256, "%f", num);
 
 	return buff;
 }
 
-Float str2float(std::string num_str){
-	Float ret;
+double str2float(std::string num_str){
+	double ret;
 
 	sscanf_s(num_str.c_str(), "%f", ret);
 
 	return ret;
 }
+
+#endif //_WIN32
 
 void spitle(char ch, std::string str, std::vector<std::string> & vectorStr, int spitlecount){
 	int oldpos = 0, pos = 0, count = 0;
@@ -154,7 +192,6 @@ void spitle(char ch, std::string str, std::vector<std::string> & vectorStr, int 
 	}while(pos != std::string::npos || oldpos != str.size() || count == spitlecount);
 }
 
-#endif //_WIN32
 
 } //strtools
-} //angelica
+} //Hemsleya

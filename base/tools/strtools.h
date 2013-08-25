@@ -7,31 +7,36 @@
 #ifndef _STRTOOLS_H
 #define _STRTOOLS_H
 
+#include <string>
 #include <vector>
-#include "u_stdint.h"
+#include <boost\cstdint.hpp>
 
-namespace angelica{
+namespace Hemsleya{
 namespace strtools{
 
-String str2utf8(String str);
+std::string str2utf8(std::string str);
 
-String utf82str(String utf8);
+std::string utf82str(std::string utf8);
 
-String int2str(Integer num);
+std::string int2str(int32_t num);
 
-Integer str2int(String num_str);
+std::string int2str(int64_t num);
 
-String uint2str(UInteger num);
+int64_t str2int(std::string num_str);
 
-UInteger str2uint(String num_str);
+std::string uint2str(uint32_t num);
 
-String float2str(Float num);
+std::string uint2str(uint64_t num);
 
-Float str2float(String num_str);
+uint64_t str2uint(std::string num_str);
 
-void spitle(char ch, String str, std::vector<String> & vectorStr, int spitlecount = 0);
+std::string float2str(double num);
+
+double str2float(std::string num_str);
+
+void spitle(char ch, std::string str, std::vector<std::string> & vectorStr, int spitlecount = 0);
 
 } //strtools
-} //angelica
+} //Hemsleya
 
 #endif //_STRTOOLS_H

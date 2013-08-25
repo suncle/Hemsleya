@@ -8,12 +8,12 @@
 
 #include <boost/thread.hpp>
 
-namespace angelica{
-namespace base{
+namespace Hemsleya{
+namespace tools{
 
-angelica::container::concurrent_interval_table<std::string, void*> wait_data;
+Hemsleya::container::small_hash_map<std::string, void*> wait_data;
 
-bool addwait(std::string key, void * data){
+void addwait(std::string key, void * data){
 	return wait_data.insert(key, data);
 }
 
@@ -38,5 +38,5 @@ void wait(){
 	boost::this_thread::sleep(boost::posix_time::milliseconds(0));
 }
 
-}// base
-}// angelica
+}// tools
+}// Hemsleya

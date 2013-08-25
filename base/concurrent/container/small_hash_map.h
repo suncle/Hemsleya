@@ -26,20 +26,21 @@ namespace container{
 template <typename K, typename V, typename _Allocator = boost::pool_allocator<V> >
 class small_hash_map {
 private:
-	struct bucket {
-		boost::atomic<_map * > _hash_bucket;
-		boost::shared_mutex _mu;
-	};
-
 	struct node {
 		V value;
 		boost::shared_mutex _mu;
 	};
 		
+	typedef typename _Allocator::template rebind<std::pair<K, node> >::other _map_node_alloc;
+
 	typedef std::pair<K, node*> value_type;
 	typedef std::map<K, node*, std::less<K>, _map_node_alloc> _map;
 	
-	typedef typename _Allocator::template rebind<std::pair<K, node> >::other _map_node_alloc;
+	struct bucket {
+		boost::atomic<_map * > _hash_bucket;
+		boost::shared_mutex _mu;
+	};
+
 	typedef typename _Allocator::template rebind<_map>::other _map_alloc_;
 	typedef typename _Allocator::template rebind<node>::other _node_alloc_;
 	typedef typename _Allocator::template rebind<bucket>::other _bucket_alloc_;
@@ -96,16 +97,13 @@ public:
 		boost::upgrade_lock<boost::shared_mutex> lock(_bucket->_mu);
 
 		_map * _map_ = (_map *)_bucket->_hash_bucket.load();
-		while (_map_ == 0){
+		if (_map_ == 0){
 			_map_ = (_map *)_bucket->_hash_bucket.load();
 
-			boost::unique_lock<boost::shared_mutex> unique_lock(boost::move(lock), boost::try_to_lock);
-			if (unique_lock.owns_lock()){
-				if (_map_ == 0){
-					_map_ = get_map();
-					_bucket->_hash_bucket.store(_map_);
-					break;
-				}
+			boost::unique_lock<boost::shared_mutex> unique_lock(boost::move(lock));
+			if (_map_ == 0){
+				_map_ = get_map();
+				_bucket->_hash_bucket.store(_map_);
 			}
 		}
 			
@@ -150,7 +148,7 @@ public:
 		unsigned int hash_value = hash(key, mask);
 		bucket * _bucket = (bucket *)&_hash_array[hash_value];
 		
-		boost::shared_lock<boost::mutex> lock(_bucket->_mu);
+		boost::shared_lock<boost::shared_mutex> lock(_bucket->_mu);
 		
 		_map * _map_ = (_map *)_bucket->_hash_bucket.load();
 		if (_map_ == 0){

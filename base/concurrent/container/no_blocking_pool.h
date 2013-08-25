@@ -19,18 +19,21 @@
 #endif
 
 #include <list>
+#include <boost/pool/pool_alloc.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/atomic.hpp>
 
 namespace Hemsleya {
 namespace container {
 
-template <typename T>
+template <typename T, typename _Allocator = boost::pool_allocator<T> >
 class no_blocking_pool{
 	struct mirco_pool{
 		std::list<typename T * > _pool; 	
 		boost::mutex _mu;
 	};
+
+	typedef typename _Allocator::template rebind<mirco_pool>::other  _Allocator_mirco_pool;
 
 public:
 	no_blocking_pool(){
@@ -41,7 +44,7 @@ public:
 #endif
 
 		_size.store(0);
-		_pool = new mirco_pool[_count];
+		_pool = _Allocator_mirco_pool.allocate(_count);
 	}
 
 	~no_blocking_pool(){
@@ -90,6 +93,8 @@ public:
 	}
 
 private:
+	_Allocator_mirco_pool _allmircopool;
+
 	mirco_pool * _pool;
 	unsigned int _count;
 
