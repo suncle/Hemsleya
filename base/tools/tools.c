@@ -23,3 +23,12 @@ void _trace(char * format, ...){
 	printf(buff);
 #endif //_DEBUG
 }
+
+#ifdef _WIN32
+#include <Windows.h>
+uint32_t processors_count(){
+	SYSTEM_INFO info;
+	GetSystemInfo(&info);
+	return info.dwNumberOfProcessors;
+}
+#endif

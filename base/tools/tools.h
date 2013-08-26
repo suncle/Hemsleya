@@ -29,6 +29,10 @@ extern "C"{
 
 void _trace(char * format, ...);
 
+#include <boost/cstdint.hpp>
+
+uint32_t processors_count();
+
 #ifdef __cplusplus
 } //"C"
 #endif //__cplusplus
