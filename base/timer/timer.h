@@ -14,7 +14,7 @@
 #include <boost/thread/tss.hpp>
 #include <boost/function.hpp>
 
-namespace angelica{
+namespace Hemsleya{
 namespace timer{
 
 typedef boost::function<void() > timerHandle;
@@ -45,6 +45,6 @@ private:
 };
 
 }// timer
-}// angelica
+}// Hemsleya
 
 #endif //_TIMER_H

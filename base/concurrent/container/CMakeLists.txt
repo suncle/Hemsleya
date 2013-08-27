@@ -8,7 +8,6 @@ SET(header_files
     detail//_hazard_ptr.h
     small_hash_map.h
     msque.h
-    no_blocking_pool.h
     optimisticque.h
     ringque.h
     swapque.h

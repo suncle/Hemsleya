@@ -6,7 +6,7 @@
  */
 #include "timer.h"
 
-namespace angelica{
+namespace Hemsleya{
 namespace timer{
 
 timer::timer(){
@@ -107,4 +107,4 @@ void timer::do_timer(){
 }
 
 }// timer
-}// angelica
+}// Hemsleya

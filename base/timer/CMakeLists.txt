@@ -2,4 +2,7 @@ PROJECT(timer)
 SET(timer_src
     timer.cpp
 )
-ADD_LIBRARY(timer ${timer_src})
+SET(timer_h
+    timer.h
+)
+ADD_LIBRARY(timer ${timer_src} ${timer_h})
