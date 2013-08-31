@@ -32,7 +32,7 @@ public:
 private:
 	exception();
 
-private:
+protected:
 	std::string err;
 
 };
