@@ -6,7 +6,6 @@ AUX_SOURCE_DIRECTORY(. DIR_SRC)
 SET(header_files
     strtools.h
     tools.h
-    wait_any.h
 )
 
 SET(SRC_LIST 
