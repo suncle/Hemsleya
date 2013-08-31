@@ -148,7 +148,7 @@ public:
 		unsigned int hash_value = hash(key, mask);
 		bucket * _bucket = (bucket *)&_hash_array[hash_value];
 		
-		boost::shared_lock<boost::shared_mutex> lock(_bucket->_mu);
+		boost::upgrade_lock<boost::shared_mutex> lock(_bucket->_mu);
 		
 		_map * _map_ = (_map *)_bucket->_hash_bucket.load();
 		if (_map_ == 0){
@@ -160,7 +160,7 @@ public:
 			return false;
 		}
 		
-		boost::unique_lock<boost::shared_mutex> unique_lock();
+		boost::unique_lock<boost::shared_mutex> unique_lock(boost::move(lock));
 
 		_map_->erase(iter);
 
