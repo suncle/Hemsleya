@@ -21,13 +21,7 @@ class abstract_factory{
 private:
 	struct mirco_pool{
 		mirco_pool() : _pool(0){}
-		~mirco_pool() {
-			while (_pool != 0){
-				char * tmp = _pool;
-				_pool = *((char**)_pool);
-				_Allocator.deallocate(tmp, (sizeof(T) > 8) ? sizeof(T) : 8);
-			}
-		}
+		~mirco_pool() {}
 
 		char * _pool; 	
 		boost::mutex _mu;
@@ -40,26 +34,31 @@ public:
 		count = processors_count();
 
 		_mirco_pool = _Allocator_mirco_pool.allocate(count);
-		for(int i = 0; i < count; i++){
+		for(uint32_t i = 0; i < count; i++){
 			new(_mirco_pool++) mirco_pool();
 		}
 	}
 
 	~abstract_factory(){
-		for(int i = 0; i < count; i++){
-			(_mirco_pool++)->~mirco_pool();
+		for(uint32_t i = 0; i < count; i++){
+			char * _pool = (_mirco_pool++)->_pool; 
+			while (_pool != 0){
+				char * tmp = _pool;
+				_pool = *((char**)_pool);
+				_Allocator.deallocate(tmp, (sizeof(T) > 8) ? sizeof(T) : 8);
+			}
 		}
 		_Allocator_mirco_pool.deallocate(_mirco_pool, count);
 	}
 
 	T * create_product(){
 		T * pT = 0;
-		for(int i = 0; i < count; i++){
+		for(uint32_t i = 0; i < count; i++){
 			boost::mutex::scoped_lock lock(_mirco_pool[i]._mu, boost::try_to_lock);
 
 			if (lock.owns_lock()){
 				if (_mirco_pool[i]._pool != 0){
-					pT = _mirco_pool[i]._pool;
+					pT = (T*)_mirco_pool[i]._pool;
 					_mirco_pool[i]._pool = *((char**)_mirco_pool[i]._pool);
 
 					break;
@@ -68,7 +67,7 @@ public:
 		}
 
 		while (pT == 0){
-			pT = _Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
+			pT = (T*)_Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
 		}
 
 		new(pT) T();
