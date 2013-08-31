@@ -29,13 +29,13 @@ Hemsleya::abstract_factory::abstract_factory<signal_> _abstract_factory_signal;
 Hemsleya::container::small_hash_map<uint32_t, signal_*> _map_signal;
 
 template <typename T>
-T * data(uint32_t _signal){
+T && data(uint32_t _signal){
 	signal_ * _signal_;
 	if (!_map_signal.search(_signal, _signal_)){
 		throw exception::undefine_signal("undefine_signal", _signal);
 	}
 	
-	return &boost::any_cast<T>(_signal_->data);
+	return boost::any_cast<T>(_signal_->data);
 }
 
 uint32_t signal(){
@@ -48,7 +48,8 @@ uint32_t signal(){
 	return token;
 }
 
-void wait_any(uint32_t _signal, boost::function<void() > DoWaitHandle, clock_t timeout){
+template <typename T>
+T && wait_any(uint32_t _signal, boost::function<void() > DoWaitHandle, clock_t timeout){
 	clock_t begin = clock();
 	signal_ * _signal_;
 	if (!_map_signal.search(_signal, _signal_)){
@@ -58,13 +59,18 @@ void wait_any(uint32_t _signal, boost::function<void() > DoWaitHandle, clock_t t
 	while(!_signal_->_flag.load() && (begin + clock()) < timeout){
 		DoWaitHandle();
 	}
+
+	return data<T>(_signal);
 }
 
-void post(uint32_t _signal){
+template <typename T>
+void post(uint32_t _signal, const T & data){
 	signal_ * _signal_;
 	if (!_map_signal.search(_signal, _signal_)){
 		throw exception::undefine_signal("undefine_signal", _signal);
 	}
+
+	_signal_->data = data;
 
 	_signal_->_flag.store(true);
 }
