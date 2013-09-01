@@ -35,7 +35,7 @@ public:
 
 		_mirco_pool = _Allocator_mirco_pool.allocate(count);
 		for(uint32_t i = 0; i < count; i++){
-			new(_mirco_pool++) mirco_pool();
+			new(&_mirco_pool[i]) mirco_pool();
 		}
 	}
 
