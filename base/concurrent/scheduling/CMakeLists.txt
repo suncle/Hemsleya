@@ -7,6 +7,7 @@ AUX_SOURCE_DIRECTORY(.//exception exception_DIR_SRC)
 
 SET(header_files
     detail//detail.h
+    detail//wait_any_detail.h	
     exception//undefine_signal.h
     wait_any.h
 )
@@ -18,3 +19,5 @@ SET(SRC_LIST
 )
 
 ADD_LIBRARY(scheduling ${SRC_LIST} ${header_files})
+target_link_libraries(scheduling exception)
+target_link_libraries(scheduling tools)
