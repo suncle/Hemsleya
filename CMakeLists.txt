@@ -13,14 +13,18 @@ MESSAGE(STATUS "This is BOOST include dir " ${Boost_INCLUDE_DIR})
 MESSAGE(STATUS "This is BINARY dir " ${PROJECT_BINARY_DIR})  
 MESSAGE(STATUS "This is SOURCE dir " ${PROJECT_SOURCE_DIR})  
 
-set(Hemsleya_include_path "${PROJECT_SOURCE_DIR}\\../build/bin/Debug" CACHE PATH "Hemsleya include path")
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}\\..)
+set(Hemsleya_include_path ${PROJECT_SOURCE_DIR}//.. CACHE PATH "Hemsleya include path")
+INCLUDE_DIRECTORIES(${Hemsleya_include_path})
+MESSAGE(STATUS "This is include dir " ${Hemsleya_include_path}) 
 
-set(Hemsleya_lib_path "${PROJECT_BINARY_DIR}\\../build/bin/Debug" CACHE PATH "Hemsleya lib path")
+set(Hemsleya_lib_path ${PROJECT_BINARY_DIR}/bin/Debug CACHE PATH "Hemsleya lib path")
 link_directories(${Hemsleya_lib_path})
+MESSAGE(STATUS "This is lib dir " ${Hemsleya_lib_path}) 
 
-MESSAGE(STATUS "This is BINARY dir " ${Hemsleya_lib_path}) 
+set(Hemsleya_bin_path ${PROJECT_BINARY_DIR}/bin CACHE PATH "Hemsleya bin path")
 
-set(Hemsleya_bin_path ${PROJECT_BINARY_DIR}/../build/bin CACHE PATH "Hemsleya bin path")
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+
 ADD_SUBDIRECTORY(base ${Hemsleya_bin_path})
 ADD_SUBDIRECTORY(test ${Hemsleya_bin_path}//test)
