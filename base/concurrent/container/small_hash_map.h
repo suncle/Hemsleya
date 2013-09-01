@@ -54,7 +54,10 @@ public:
 
 	~small_hash_map(){
 		for(unsigned int i = 0; i < mask; i++){
-			put_map((_map *)_hash_array[i]._hash_bucket.load());
+			_map * _map_ = _hash_array[i]._hash_bucket.load();
+			if (_map_ != 0){
+				put_map(_map_);
+			}
 		}
 	}
 
@@ -263,7 +266,7 @@ private:
 	}
 
 	void put_map(_map * _map_){
-		_map_alloc.destroy(_map_);
+		_map_->~_map();
 		_map_alloc.deallocate(_map_, 1);
 	}
 
