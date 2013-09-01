@@ -42,6 +42,9 @@ private:
 
 };
 
+boost::atomic_uint32_t detail::_token;
+Hemsleya::container::optimisticque<uint32_t> detail::_recover;
+
 const uint32_t token(){
 	uint32_t token;
 	
