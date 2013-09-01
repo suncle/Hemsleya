@@ -173,7 +173,7 @@ std::string float2str(double num){
 }
 
 double str2float(std::string num_str){
-	double ret;
+	double ret = 0.0;
 
 	sscanf_s(num_str.c_str(), "%f", ret);
 
