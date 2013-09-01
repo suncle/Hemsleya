@@ -78,12 +78,12 @@ public:
 	template <typename t1>
 	T * create_product(t1 _t1){
 		T * pT = 0;
-		for(int i = 0; i < count; i++){
+		for(uint32_t i = 0; i < count; i++){
 			boost::mutex::scoped_lock lock(_mirco_pool[i]._mu, boost::try_to_lock);
 
 			if (lock.owns_lock()){
 				if (_mirco_pool[i]._pool != 0){
-					pT = _mirco_pool[i]._pool;
+					pT = (T*)_mirco_pool[i]._pool;
 					_mirco_pool[i]._pool = *((char**)_mirco_pool[i]._pool);
 
 					break;
@@ -92,7 +92,7 @@ public:
 		}
 
 		while (pT == 0){
-			pT = _Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
+			pT = (T*)_Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
 		}
 
 		new(pT) T(_t1);
@@ -103,12 +103,12 @@ public:
 	template <typename t1, typename t2>
 	T * create_product(t1 _t1, t2 _t2){
 		T * pT = 0;
-		for(int i = 0; i < count; i++){
+		for(uint32_t i = 0; i < count; i++){
 			boost::mutex::scoped_lock lock(_mirco_pool[i]._mu, boost::try_to_lock);
 
 			if (lock.owns_lock()){
 				if (_mirco_pool[i]._pool != 0){
-					pT = _mirco_pool[i]._pool;
+					pT = (T*)_mirco_pool[i]._pool;
 					_mirco_pool[i]._pool = *((char**)_mirco_pool[i]._pool);
 
 					break;
@@ -117,7 +117,7 @@ public:
 		}
 
 		while (pT == 0){
-			pT = _Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
+			pT = (T*)_Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
 		}
 
 		new(pT) T(_t1, _t2);
@@ -128,12 +128,12 @@ public:
 	template <typename t1, typename t2, typename t3>
 	T * create_product(t1 _t1, t2 _t2, t3 _t3){
 		T * pT = 0;
-		for(int i = 0; i < count; i++){
+		for(uint32_t i = 0; i < count; i++){
 			boost::mutex::scoped_lock lock(_mirco_pool[i]._mu, boost::try_to_lock);
 
 			if (lock.owns_lock()){
 				if (_mirco_pool[i]._pool != 0){
-					pT = _mirco_pool[i]._pool;
+					pT = (T*)_mirco_pool[i]._pool;
 					_mirco_pool[i]._pool = *((char**)_mirco_pool[i]._pool);
 
 					break;
@@ -142,7 +142,7 @@ public:
 		}
 
 		while (pT == 0){
-			pT = _Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
+			pT = (T*)_Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
 		}
 
 		new(pT) T(_t1, _t2, _t3);
@@ -153,12 +153,12 @@ public:
 	template <typename t1, typename t2, typename t3, typename t4>
 	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4){
 		T * pT = 0;
-		for(int i = 0; i < count; i++){
+		for(uint32_t i = 0; i < count; i++){
 			boost::mutex::scoped_lock lock(_mirco_pool[i]._mu, boost::try_to_lock);
 
 			if (lock.owns_lock()){
 				if (_mirco_pool[i]._pool != 0){
-					pT = _mirco_pool[i]._pool;
+					pT = (T*)_mirco_pool[i]._pool;
 					_mirco_pool[i]._pool = *((char**)_mirco_pool[i]._pool);
 
 					break;
@@ -167,7 +167,7 @@ public:
 		}
 
 		while (pT == 0){
-			pT = _Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
+			pT = (T*)_Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
 		}
 
 		new(pT) T(_t1, _t2, _t3, _t4);
@@ -178,12 +178,12 @@ public:
 	template <typename t1, typename t2, typename t3, typename t4, typename t5>
 	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5){
 		T * pT = 0;
-		for(int i = 0; i < count; i++){
+		for(uint32_t i = 0; i < count; i++){
 			boost::mutex::scoped_lock lock(_mirco_pool[i]._mu, boost::try_to_lock);
 
 			if (lock.owns_lock()){
 				if (_mirco_pool[i]._pool != 0){
-					pT = _mirco_pool[i]._pool;
+					pT = (T*)_mirco_pool[i]._pool;
 					_mirco_pool[i]._pool = *((char**)_mirco_pool[i]._pool);
 
 					break;
@@ -192,7 +192,7 @@ public:
 		}
 
 		while (pT == 0){
-			pT = _Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
+			pT = (T*)_Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
 		}
 
 		new(pT) T(_t1, _t2, _t3, _t4, _t5);
@@ -203,12 +203,12 @@ public:
 	template <typename t1, typename t2, typename t3, typename t4, typename t5, typename t6>
 	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5, t6 _t6){
 		T * pT = 0;
-		for(int i = 0; i < count; i++){
+		for(uint32_t i = 0; i < count; i++){
 			boost::mutex::scoped_lock lock(_mirco_pool[i]._mu, boost::try_to_lock);
 
 			if (lock.owns_lock()){
 				if (_mirco_pool[i]._pool != 0){
-					pT = _mirco_pool[i]._pool;
+					pT = (T*)_mirco_pool[i]._pool;
 					_mirco_pool[i]._pool = *((char**)_mirco_pool[i]._pool);
 
 					break;
@@ -217,7 +217,7 @@ public:
 		}
 
 		while (pT == 0){
-			pT = _Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
+			pT = (T*)_Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
 		}
 
 		new(pT) T(_t1, _t2, _t3, _t4, _t5, _t6);
@@ -228,12 +228,12 @@ public:
 	template <typename t1, typename t2, typename t3, typename t4, typename t5, typename t6, typename t7>
 	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5, t6 _t6, t7 _t7){
 		T * pT = 0;
-		for(int i = 0; i < count; i++){
+		for(uint32_t i = 0; i < count; i++){
 			boost::mutex::scoped_lock lock(_mirco_pool[i]._mu, boost::try_to_lock);
 
 			if (lock.owns_lock()){
 				if (_mirco_pool[i]._pool != 0){
-					pT = _mirco_pool[i]._pool;
+					pT = (T*)_mirco_pool[i]._pool;
 					_mirco_pool[i]._pool = *((char**)_mirco_pool[i]._pool);
 
 					break;
@@ -242,7 +242,7 @@ public:
 		}
 
 		while (pT == 0){
-			pT = _Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
+			pT = (T*)_Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
 		}
 
 		new(pT) T(_t1, _t2, _t3, _t4, _t5, _t6, _t7);
@@ -253,12 +253,12 @@ public:
 	template <typename t1, typename t2, typename t3, typename t4, typename t5, typename t6, typename t7, typename t8>
 	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5, t6 _t6, t7 _t7, t8 _t8){
 		T * pT = 0;
-		for(int i = 0; i < count; i++){
+		for(uint32_t i = 0; i < count; i++){
 			boost::mutex::scoped_lock lock(_mirco_pool[i]._mu, boost::try_to_lock);
 
 			if (lock.owns_lock()){
 				if (_mirco_pool[i]._pool != 0){
-					pT = _mirco_pool[i]._pool;
+					pT = (T*)_mirco_pool[i]._pool;
 					_mirco_pool[i]._pool = *((char**)_mirco_pool[i]._pool);
 
 					break;
@@ -267,7 +267,7 @@ public:
 		}
 
 		while (pT == 0){
-			pT = _Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
+			pT = (T*)_Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
 		}
 
 		new(pT) T(_t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8);
@@ -278,12 +278,12 @@ public:
 	template <typename t1, typename t2, typename t3, typename t4, typename t5, typename t6, typename t7, typename t8, typename t9>
 	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5, t6 _t6, t7 _t7, t8 _t8, t9 _t9){
 		T * pT = 0;
-		for(int i = 0; i < count; i++){
+		for(uint32_t i = 0; i < count; i++){
 			boost::mutex::scoped_lock lock(_mirco_pool[i]._mu, boost::try_to_lock);
 
 			if (lock.owns_lock()){
 				if (_mirco_pool[i]._pool != 0){
-					pT = _mirco_pool[i]._pool;
+					pT = (T*)_mirco_pool[i]._pool;
 					_mirco_pool[i]._pool = *((char**)_mirco_pool[i]._pool);
 
 					break;
@@ -292,7 +292,7 @@ public:
 		}
 
 		while (pT == 0){
-			pT = _Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
+			pT = (T*)_Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
 		}
 
 		new(pT) T(_t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9);
@@ -303,12 +303,12 @@ public:
 	template <typename t1, typename t2, typename t3, typename t4, typename t5, typename t6, typename t7, typename t8, typename t9, typename t10>
 	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5, t6 _t6, t7 _t7, t8 _t8, t9 _t9, t10 _t10){
 		T * pT = 0;
-		for(int i = 0; i < count; i++){
+		for(uint32_t i = 0; i < count; i++){
 			boost::mutex::scoped_lock lock(_mirco_pool[i]._mu, boost::try_to_lock);
 
 			if (lock.owns_lock()){
 				if (_mirco_pool[i]._pool != 0){
-					pT = _mirco_pool[i]._pool;
+					pT = (T*)_mirco_pool[i]._pool;
 					_mirco_pool[i]._pool = *((char**)_mirco_pool[i]._pool);
 
 					break;
@@ -317,7 +317,7 @@ public:
 		}
 
 		while (pT == 0){
-			pT = _Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
+			pT = (T*)_Allocator.allocate((sizeof(T) > 8) ? sizeof(T) : 8);
 		}
 
 		new(pT) T(_t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9, _t10);
