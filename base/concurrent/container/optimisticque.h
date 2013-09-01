@@ -178,7 +178,8 @@ private:
 			put_node(_tmpnext);
 		}while(_next != 0);
 
-		delete _list;
+		_list->~list();
+		_alloc_list.deallocate(_list, 1);
 	}
 
 private:
