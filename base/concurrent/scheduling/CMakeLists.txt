@@ -16,5 +16,5 @@ SET(SRC_LIST
 )
 
 ADD_LIBRARY(scheduling ${SRC_LIST} ${header_files})
-target_link_libraries(scheduling timer)
+target_link_libraries(scheduling exception)
 target_link_libraries(scheduling tools)
