@@ -6,7 +6,6 @@
  */
 
 #include "active.h"
-#include "mirco_active.h"
 #include "active_server.h"
 
 namespace Hemsleya {

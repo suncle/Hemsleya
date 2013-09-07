@@ -12,10 +12,11 @@
 #include <boost/function.hpp>
 
 #include "mirco_active.h"
-#include "active_server.h"
 
 namespace Hemsleya {
 namespace active {
+
+class active_server;
 
 class active {
 public:
