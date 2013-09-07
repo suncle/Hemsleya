@@ -6,22 +6,24 @@
  */
 #include <Hemsleya/base/concurrent/scheduling/wait_any.h>
 
-uint32_t signal = 0;
-
 struct test{
 	int data;
 };
 
+Hemsleya::scheduling::template_version::signal<test> signal;
+
+
 void dowait(){
 	test test;
 	test.data = 1001;
-	Hemsleya::scheduling::post(signal, test);
+	signal.post(test);
 }
 
 int main(){
-	signal = Hemsleya::scheduling::signal();
 
-	test t = Hemsleya::scheduling::wait_any<test>(signal, dowait);
+	test t;
+	
+	signal.wait_any(t, dowait);
 
 	return 1;
 }
