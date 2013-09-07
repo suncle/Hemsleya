@@ -274,7 +274,7 @@ public:
 	}
 
 	void release_product(T * pT, size_t count){
-		for(int i = 0; i < count; i++){
+		for(uint32_t i = 0; i < count; i++){
 			pT[i].~T();
 		}
 

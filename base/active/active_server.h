@@ -12,9 +12,8 @@
 
 #include <boost/thread.hpp>
 #include <boost/atomic.hpp>
-#include <boost/pool/pool_alloc.hpp>
 
-#include <Hemsleya/base/concurrent/container/no_blocking_pool.h>
+#include <Hemsleya/base/concurrent/container/msque.h>
 
 namespace Hemsleya {
 namespace active {
@@ -32,9 +31,7 @@ public:
 	void run();
 
 private:
-	mirco_active * get_mirco_active();
-	
-	void release_mirco_active(mirco_active * _mirco_active);
+	void post_mirco_active(mirco_active *);
 
 private:
 	friend class mirco_active;
@@ -42,14 +39,9 @@ private:
 
 	boost::thread_specific_ptr<mirco_active> next_active;
 
-	boost::pool_allocator<mirco_active> pool_mirco_active;
-
 	boost::shared_mutex _swap_mu;
-	Hemsleya::container::no_blocking_pool<mirco_active> *_current_pool, *_backstage_pool;
-
-	Hemsleya::container::no_blocking_pool<mirco_active> _free_active_pool;
-
-	Hemsleya::container::no_blocking_pool<mirco_active> _active_pool[2];
+	Hemsleya::container::msque<mirco_active*> *_current_pool, *_backstage_pool;
+	Hemsleya::container::msque<mirco_active*> _active_pool[2];
 
 };
 

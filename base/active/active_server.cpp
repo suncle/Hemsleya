@@ -26,11 +26,11 @@ active_server::~active_server() {
 }
 
 void active_server::do_wait(){
-	boost::shared_lock<boost::shared_mutex> shared_lock(_swap_mu, boost::try_to_lock);
+	boost::shared_lock<boost::shared_mutex> shared_lock(_swap_mu);
 
 	mirco_active * _active = next_active.get();
 	if (_active == 0){
-		if ((_active = _current_pool->pop()) != 0){
+		if (_current_pool->pop(_active)){
 			next_active.reset(_active);
 		}
 	}
@@ -43,12 +43,12 @@ void active_server::do_wait(){
 }
 
 void active_server::run(){
-	boost::shared_lock<boost::shared_mutex> shared_lock(_swap_mu, boost::try_to_lock);
+	boost::shared_lock<boost::shared_mutex> shared_lock(_swap_mu);
 
 	while(1){
-		mirco_active * _active = next_active.release();
+		mirco_active * _active = next_active.get();
 		if (_active == 0){
-			mirco_active * _active = _current_pool->pop();
+			_current_pool->pop(_active);
 		}
 		if (_active == 0){
 			shared_lock.unlock();
@@ -56,7 +56,6 @@ void active_server::run(){
 		}
 
 		_active->run();
-		release_mirco_active(_active);
 	}
 
 	boost::unique_lock<boost::shared_mutex> lock(_swap_mu, boost::try_to_lock);
@@ -65,20 +64,8 @@ void active_server::run(){
 	}
 }
 
-mirco_active * active_server::get_mirco_active(){
-	mirco_active * _mirco_active = _free_active_pool.pop();
-	if (_mirco_active == 0){
-		_mirco_active = pool_mirco_active.allocate(1);
-		::new (_mirco_active) mirco_active();
-	}
-
-	_backstage_pool->put(_mirco_active);
-
-	return _mirco_active;
-}
-
-void active_server::release_mirco_active(mirco_active * _mirco_active){
-	_free_active_pool.put(_mirco_active);
+void active_server::post_mirco_active(mirco_active * _mirco_active){
+	_backstage_pool->push(_mirco_active);
 }
 
 } /* namespace active */

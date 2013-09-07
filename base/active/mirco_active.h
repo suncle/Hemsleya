@@ -12,18 +12,16 @@
 #include <boost/function.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
-#include <Hemsleya/base/concurrent/container/msque.h>
+#include <Hemsleya/base/concurrent/abstract_factory/abstract_factory.h>
 
 namespace Hemsleya {
 namespace active {
 
+typedef boost::function<void(void) > event_handle;
+
 class active;
-class active_server;
 
 class mirco_active {
-private:
-	typedef boost::function<void(void) > event_handle;
-
 public:
 	mirco_active();
 	~mirco_active();
@@ -39,9 +37,17 @@ private:
 
 	active * owner;
 
-	boost::shared_mutex _mu;
+	struct node{
+		node(event_handle _event_handle_) : _event_handle(_event_handle_), _next(0){}
 
-	Hemsleya::container::msque<event_handle > event_que;
+		event_handle _event_handle;
+		node * _next;
+	};
+
+	abstract_factory::abstract_factory<node> _abstract_factory_node;
+
+	boost::shared_mutex _mu;
+	boost::atomic<node *> _list;
 
 };
 

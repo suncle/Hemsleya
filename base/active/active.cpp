@@ -13,25 +13,28 @@ namespace Hemsleya {
 namespace active {
 
 active::active(active_server & _active_server_) : _active_server(&_active_server_), _is_cancel(false){
-	_mirco_active = _active_server->get_mirco_active();
+	_current_active = &_mirco_active[0];
+	_backstage_active = &_mirco_active[1];
+
+	_active_server->post_mirco_active(_current_active);
 }
 
-active::~active() {
-	_active_server->release_mirco_active(_mirco_active);
+active::~active(){
 }
 
 void active::post(event_handle _handle){
-	while(!_mirco_active->post(_handle)){
+	while(!_current_active->post(_handle)){
 		do{
 			boost::unique_lock<boost::shared_mutex> lock(_mu, boost::try_to_lock);
 			if (lock.owns_lock()){
-				_mirco_active = _active_server->get_mirco_active();
+				std::swap(_current_active, _backstage_active);
+				_active_server->post_mirco_active(_current_active);
 				lock.unlock();
 				break;
 			}
-			
-			boost::shared_lock<boost::shared_mutex> shared_lock(_mu);
 		}while(0);
+	
+		boost::shared_lock<boost::shared_mutex> shared_lock(_mu);
 	}
 }
 
