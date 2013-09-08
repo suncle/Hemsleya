@@ -38,11 +38,12 @@ private:
 	typedef boost::function<void(typename T * )> fn_dealloc;
 	// deallocate struct data
 	typedef typename T * _deallocate_data;
+	typedef typename _Allocator::template rebind<_deallocate_data>::other _Allocator_deallocate_data;
 	// recover list
 	struct recover_list {
 		recover_list() : active(1) {re_vector.reserve(32);}
 
-		std::vector<_deallocate_data> re_vector;
+		std::vector<_deallocate_data, _Allocator_deallocate_data> re_vector;
 		boost::atomic_int32_t active; // 0 使用中 / 1 未使用
 	};
 
