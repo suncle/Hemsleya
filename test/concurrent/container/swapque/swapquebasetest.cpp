@@ -9,7 +9,7 @@
 
 int main(){
 	base_test<Hemsleya::container::swapque<test> > test;
-	test();
+	test(100);
 
 	return 1;
 }

@@ -69,10 +69,10 @@ private:
 	}
 
 public:
-	void operator() (){
+	void operator() (int _count_){
 		data data[4];
 		clock_t begin, runtime;
-		for(int i = 0; i < 100; i++){
+		for(int i = 0; i < _count_; i++){
 			count = 4;
 			for(int i = 0; i < 4; i++){
 				back[i].thid = i;

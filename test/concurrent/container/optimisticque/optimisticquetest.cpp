@@ -9,7 +9,7 @@
 
 int main(){
 	base_test<Hemsleya::container::optimisticque<test> > test;
-	test();
+	test(10);
 
 	return 1;
 }
