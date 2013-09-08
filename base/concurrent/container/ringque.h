@@ -69,29 +69,36 @@ public:
 	}
 
 	void push(T data){
-		boost::upgrade_lock<boost::shared_mutex> lock(_mu);
+		boost::shared_lock<boost::shared_mutex> lock(_mu);
 
 		unsigned int slide = _push_slide.load();
 		unsigned int newslide = 0;
 		while(1){
 			newslide = slide+1; 
+			while (newslide == _pop_slide.load()){
+				lock.unlock();
+
+				{
+					boost::unique_lock<boost::shared_mutex> uniquelock(_mu, boost::try_to_lock);
+					if (uniquelock.owns_lock()){
+						if (newslide == _pop_slide.load()){
+							resize();
+						}
+					}
+				}
+
+				lock.lock();
+			}
+
 			if (newslide == _que_max){
 				newslide = 0;
 			}
 
-			if (newslide == _pop_slide.load()){
-				boost::unique_lock<boost::shared_mutex> uniquelock(boost::move(lock));
-				slide = _push_slide.load();
-				if (newslide == _que_max){
-					newslide = 0;
+			if (_push_slide.compare_exchange_strong(slide, newslide)){	
+				T * _null = 0, * _node = _abstract_factory_T.create_product(data);
+				while(!_que[slide].compare_exchange_weak(_null, _node)){
+					_null = 0;
 				}
-				if (newslide == _pop_slide.load()){
-					resize();
-				}
-			}
-
-			if (_push_slide.compare_exchange_strong(slide, newslide)){		
-				_que[slide].store(_abstract_factory_T.create_product(data));
 				_size++;
 				break;
 			}
@@ -102,20 +109,17 @@ public:
 		boost::shared_lock<boost::shared_mutex> lock(_mu);
 
 		T * _tmp = 0;
-		unsigned int slide = _pop_slide.load();
+		unsigned int slide = _pop_slide.load(), slidetail = ((slide == _que_max) ? 0 : slide);
 		unsigned int newslide = 0;
 		while(1){
-			newslide = (slide == _que_max) ? 0 : (slide + 1);
-			if (newslide == _que_max){
-				newslide = 0;
-			}
+			newslide = slidetail + 1;
 			
-			if (newslide == _push_slide.load()){
+			if (slidetail == _push_slide.load()){
 				break;
 			}
 
 			if (_pop_slide.compare_exchange_strong(slide, newslide)){
-				while((_tmp = _que[newslide].exchange(0)) == 0);
+				while((_tmp = _que[slidetail].exchange(0)) == 0);
 				data = *_tmp;
 				_abstract_factory_T.release_product(_tmp, 1);
 				_size--;
@@ -128,24 +132,31 @@ public:
 
 private:
 	void resize(){
-		size_t size = 0, size1 = 0, size2 = 0;
+		size_t size = 0;
 		unsigned int pushslide = _push_slide.load();
 		unsigned int popslide = _pop_slide.load();
+		unsigned int slidetail = ((popslide == _que_max) ? 0 : popslide);
 		boost::atomic<typename T *> * _tmp = 0;
-		unsigned int newslide = pushslide+1;
 
-		if (newslide == popslide){
-			size = _que_max*sizeof(boost::atomic<typename T *>)*2;
-			while((_tmp = (boost::atomic<typename T *>*)malloc(size)) == 0);
-			size1 = pushslide*sizeof(boost::atomic<typename T *>);
-			size2 = _que_max*sizeof(boost::atomic<typename T *>)-size1;
-			memcpy(_tmp, _que, size1);
-			memcpy((char*)_tmp+size-size2, (char*)_que+size1, size2); 
+		size = _que_max*2;
+		_tmp = get_que(size);
+		if (popslide >= pushslide){
+			for(size_t i = 0; i < pushslide; i++){
+				_tmp[i].store(_que[i].load(boost::memory_order_relaxed), boost::memory_order_relaxed);		
+			}
+			size_t size1 = _que_max - popslide;
+			for(size_t i = 0; i < size1; i++){
+				_tmp[i+size-size1].store(_que[popslide+i].load(boost::memory_order_relaxed), boost::memory_order_relaxed);		
+			}
 			_pop_slide += _que_max;
-			_que_max *= 2;
-			free(_que);
-			_que = _tmp;
+		}else{
+			for(size_t i = popslide; i < pushslide; i++){
+				_tmp[i].store(_que[i].load(boost::memory_order_relaxed), boost::memory_order_relaxed);	
+			}
 		}
+		put_que(_que, _que_max);
+		_que_max *= 2;
+		_que = _tmp;
 	}
 
 private:
@@ -153,9 +164,9 @@ private:
 		que _que = _que_alloc.allocate(size);
 		while(_que == 0){
 			_que = _que_alloc.allocate(size);
-			for(int i = 0; i < size; i++){
-				_que[i].store(0, boost::memory_order_relaxed);		
-			}
+		}
+		for(uint32_t i = 0; i < size; i++){
+			_que[i].store(0, boost::memory_order_relaxed);		
 		}
 
 		return _que;
