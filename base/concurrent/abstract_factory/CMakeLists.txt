@@ -14,3 +14,4 @@ SET(SRC_LIST
 )
 
 ADD_LIBRARY(abstract_factory ${SRC_LIST} ${header_files})
+target_link_libraries(abstract_factory tools)

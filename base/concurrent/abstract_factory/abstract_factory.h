@@ -285,14 +285,15 @@ private:
 	T * _alloc(size_t count){
 		if (count <= min_count){
 			for(uint32_t i = 0; i < _pool_count; i++){
-				if (_vector_mirco_pool[i]._mu.test_and_set()){
+				if (!_vector_mirco_pool[i]._mu.test_and_set()){
 					if (_vector_mirco_pool[i]._pool != 0){
 						T * tmp = (T*)_vector_mirco_pool[i]._pool;
-						_vector_mirco_pool[i]._pool = *((char**)_vector_mirco_pool[i]._pool);
+						_vector_mirco_pool[i]._pool = *((void**)_vector_mirco_pool[i]._pool);
 						_vector_mirco_pool[i]._mu.clear();
 
 						return tmp;
 					}
+					_vector_mirco_pool[i]._mu.clear();
 				}
 			}
 		}
@@ -304,7 +305,7 @@ private:
 		if (count <= min_count){
 			uint32_t i = 0;
 			while(1){
-				if (_vector_mirco_pool[i]._mu.test_and_set()){
+				if (!_vector_mirco_pool[i]._mu.test_and_set()){
 					*((void**)mem) = _vector_mirco_pool[i]._pool;
 					_vector_mirco_pool[i]._pool = (void*)mem;
 					_vector_mirco_pool[i]._mu.clear();
@@ -316,9 +317,9 @@ private:
 					i = 0;
 				}
 			}
+		}else{
+			_Allocator.deallocate(mem, count);
 		}
-
-		_Allocator.deallocate(mem, count);
 	}
 
 private:
