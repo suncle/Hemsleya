@@ -8,14 +8,14 @@
 #define _optimisticque_H
 
 #include <boost/atomic.hpp>
-#include <boost/pool/pool_alloc.hpp>
 
 #include <Hemsleya/base/concurrent/container/detail/_hazard_ptr.h>
+#include <Hemsleya/base/concurrent/abstract_factory/abstract_factory.h>
 
 namespace Hemsleya{
 namespace container{
 
-template<class T, class _Ax = boost::pool_allocator<T> >
+template<class T, class _Ax = std::allocator<T> >
 class optimisticque{
 private:
 	struct node{
@@ -130,30 +130,15 @@ public:
 
 private:
 	node * get_node(){
-		node * _node = _alloc_node.allocate(1);
-		while(_node == 0){_node = _alloc_node.allocate(1);};
-		::new (_node) node();
-
-		_node->next = 0;
-		_node->prev = 0;
-
-		return _node;
+		return _abstract_factory_node.create_product();
 	}
 
 	node * get_node(const T & data){
-		node * _node = _alloc_node.allocate(1);
-		while(_node == 0){_node = _alloc_node.allocate(1);};
-		::new (_node) node(data);
-
-		_node->next = 0;
-		_node->prev = 0;
-
-		return _node;
+		return _abstract_factory_node.create_product(data);
 	}
 
 	void put_node(node * _node){
-		_node->~node();
-		_alloc_node.deallocate(_node, 1);
+		_abstract_factory_node.release_product(_node, 1);
 	}
 
 	list * get_list(){
@@ -187,6 +172,8 @@ private:
 
 	_Alloc_node _alloc_node;
 	_Alloc_list _alloc_list;
+
+	abstract_factory::abstract_factory<node, _Alloc_node> _abstract_factory_node;
 
 	detail::_hazard_system<node> _hsys;
 	detail::_hazard_system<list> _hsys_list;

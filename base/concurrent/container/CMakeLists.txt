@@ -19,3 +19,4 @@ SET(SRC_LIST
 )
 
 ADD_LIBRARY(container ${SRC_LIST} ${header_files})
+target_link_libraries(container abstract_factory)

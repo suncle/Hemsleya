@@ -9,12 +9,13 @@
 
 #include <boost/atomic.hpp>
 #include <boost/thread.hpp>
-#include <boost/pool/pool_alloc.hpp>
+
+#include <Hemsleya/base/concurrent/abstract_factory/abstract_factory.h>
 
 namespace Hemsleya{
 namespace container{
 
-template<typename T, typename _Allocator = boost::pool_allocator<T>, unsigned detailsize = 1024 >
+template<typename T, typename _Allocator = std::allocator<T>, unsigned detailsize = 1024 >
 class ringque{ 
 private:
 	typedef typename _Allocator::template rebind<boost::atomic<typename T *> >::other _Allque;
@@ -90,9 +91,7 @@ public:
 			}
 
 			if (_push_slide.compare_exchange_strong(slide, newslide)){		
-				T * _tmp = _T_alloc.allocate(1);
-				::new (_tmp) T(data);
-				_que[slide].store(_tmp);
+				_que[slide].store(_abstract_factory_T.create_product(data));
 				_size++;
 				break;
 			}
@@ -118,8 +117,7 @@ public:
 			if (_pop_slide.compare_exchange_strong(slide, newslide)){
 				while((_tmp = _que[newslide].exchange(0)) == 0);
 				data = *_tmp;
-				_tmp->~T();
-				_T_alloc.deallocate(_tmp, 1);
+				_abstract_factory_T.release_product(_tmp, 1);
 				_size--;
 				return true;
 			}
@@ -153,7 +151,12 @@ private:
 private:
 	que get_que(uint32_t size){
 		que _que = _que_alloc.allocate(size);
-		while(_que == 0){_que = _que_alloc.allocate(size);};
+		while(_que == 0){
+			_que = _que_alloc.allocate(size);
+			for(int i = 0; i < size; i++){
+				_que[i].store(0, boost::memory_order_relaxed);		
+			}
+		}
 
 		return _que;
 	}
@@ -168,8 +171,10 @@ private:
 	boost::atomic_uint _push_slide, _pop_slide, _size;
 	unsigned int _que_max;
 	
-	_Allocator _T_alloc;
 	_Allque _que_alloc;
+
+	abstract_factory::abstract_factory<T, _Allocator> _abstract_factory_T;
+
 };
 
 }//container

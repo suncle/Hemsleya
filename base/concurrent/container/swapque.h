@@ -9,14 +9,14 @@
 
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/atomic.hpp>
-#include <boost/pool/pool_alloc.hpp>
 
 #include <Hemsleya/base/concurrent/container/detail/_hazard_ptr.h>
+#include <Hemsleya/base/concurrent/abstract_factory/abstract_factory.h>
 
 namespace Hemsleya{
 namespace container{
 
-template <typename T, typename _Allocator = boost::pool_allocator<T> >
+template <typename T, typename _Allocator = std::allocator<T> >
 class swapque{
 private:
 	struct _que_node{
@@ -102,22 +102,27 @@ public:
 		_hazard_sys.acquire(_hp_node, 2);
 		while(1){
 			_hazard_que->_hazard = __que.load();
-			boost::upgrade_lock<boost::shared_mutex> lock(_hazard_que->_hazard->_mu, boost::try_to_lock);
+			boost::shared_lock<boost::shared_mutex> lock(_hazard_que->_hazard->_mu, boost::try_to_lock);
 			
 			if (lock.owns_lock()){
 				_hp_node[0]->_hazard = _hazard_que->_hazard->_frond->_begin.load();
 				while(1){
-					if (_hp_node[0]->_hazard == _hazard_que->_hazard->_frond->_end.load()){
+					while (_hp_node[0]->_hazard == _hazard_que->_hazard->_frond->_end.load()){
 						if (_hazard_que->_hazard->_size.load() == 0){
 							goto end;
 						}
 
-						boost::unique_lock<boost::shared_mutex> uniquelock(boost::move(lock));
-						std::swap(_hazard_que->_hazard->_frond, _hazard_que->_hazard->_back);
-						_hp_node[0]->_hazard = _hazard_que->_hazard->_frond->_begin.load();
-						if (_hp_node[0]->_hazard == _hazard_que->_hazard->_frond->_end.load()){
-							goto end;
+						lock.unlock();
+
+						{
+							boost::unique_lock<boost::shared_mutex> uniquelock(_hazard_que->_hazard->_mu, boost::try_to_lock);
+							if (uniquelock.owns_lock()){
+								std::swap(_hazard_que->_hazard->_frond, _hazard_que->_hazard->_back);
+							}
 						}
+
+						lock.lock();
+						_hp_node[0]->_hazard = _hazard_que->_hazard->_frond->_begin.load();
 					}
 
 					_hp_node[1]->_hazard = _hp_node[0]->_hazard->_next;
@@ -150,14 +155,12 @@ private:
 		__que->_size = 0;
 
 		__que->_frond = __mirco_que_alloc.allocate(1);
-		_que_node * _node = __node_alloc.allocate(1);
-		_node->_next.store(0);
+		_que_node * _node = _abstract_factory_node.create_product();
 		__que->_frond->_begin.store(_node);
 		__que->_frond->_end.store(_node);
 
 		__que->_back = __mirco_que_alloc.allocate(1);
-		_node = __node_alloc.allocate(1);
-		_node->_next.store(0);
+		_node = _abstract_factory_node.create_product();
 		__que->_back->_begin.store(_node);
 		__que->_back->_end.store(_node);
 
@@ -191,26 +194,19 @@ private:
 	}
 
 	_que_node * get_node(const T & data){
-		_que_node * _node = __node_alloc.allocate(1);
-		while(_node == 0){_node = __node_alloc.allocate(1);};
-		::new(_node) _que_node();
-
-		_node->data = data;
-		_node->_next = 0;
-		
-		return _node;
+		return _abstract_factory_node.create_product(data);
 	}
 
 	void put_node(_que_node * _p){
-		_p->~_que_node();
-		__node_alloc.deallocate(_p, 1);
+		_abstract_factory_node.release_product(_p, 1);
 	}
 
 private:
 	boost::atomic<_que *> __que;
 	_que_alloc __que_alloc;
 	_mirco_que_alloc __mirco_que_alloc;
-	_node_alloc __node_alloc;
+
+	abstract_factory::abstract_factory<_que_node, _node_alloc> _abstract_factory_node;
 
 	_hazard_system _hazard_sys;
 	_hazard_que_system _hazard_que_sys;

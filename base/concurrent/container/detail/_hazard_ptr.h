@@ -9,11 +9,12 @@
 #define _HAZARD_PTR_H
 
 #include <vector>
+
+#include <boost/array.hpp>
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
 #include <boost/foreach.hpp>
 #include <boost/atomic.hpp>
-#include <boost/pool/pool_alloc.hpp>
 
 namespace Hemsleya{
 namespace container{
@@ -27,7 +28,7 @@ struct _hazard_ptr{
 };
 
 // hazard system 
-template <typename T, typename _Allocator = boost::pool_allocator<T> >
+template <typename T, typename _Allocator = std::allocator<T> >
 class _hazard_system{
 private:
 	//Recover flag
@@ -39,12 +40,19 @@ private:
 	typedef typename T * _deallocate_data;
 	// recover list
 	struct recover_list {
+		recover_list() : active(1) {re_vector.reserve(32);}
+
 		std::vector<_deallocate_data> re_vector;
 		boost::atomic_int32_t active; // 0 使用中 / 1 未使用
 	};
 
+	// allocator 
+	typedef typename _Allocator::template rebind<recover_list>::other __alloc_recover_list;
+
+	__alloc_recover_list _alloc_recover_list;
+
 	// 回收队列集合
-	std::vector<recover_list * > re_list_set;
+	boost::array<recover_list * , 8> re_list_set;
 
 	fn_dealloc _fn_dealloc;
 
@@ -57,7 +65,7 @@ private:
 
 	// allocator 
 	typedef typename _Allocator::template rebind<_list_node>::other __alloc_list_node;
-		
+
 	__alloc_list_node _alloc_list_node;
 
 	// hazard ptr list
@@ -67,10 +75,9 @@ private:
 
 public:
 	_hazard_system(fn_dealloc _D) : _fn_dealloc(_D){
-		re_list_set.resize(8);
 		for(int i = 0; i < 8; i++){
-			re_list_set[i] = new recover_list;
-			re_list_set[i]->active.store(1);
+			re_list_set[i] = _alloc_recover_list.allocate(1);
+			new(re_list_set[i]) recover_list();
 		}
 
 		llen.store(1);
@@ -84,9 +91,11 @@ public:
 					_fn_dealloc(var);
 				}
 				_re_list->re_vector.clear();
+
+				_re_list->~recover_list();
+				_alloc_recover_list.deallocate(_re_list, 1);
 			}
 		}
-		re_list_set.clear();
 	}
 
 private:
@@ -149,17 +158,11 @@ public:
 
 			if (_rvector_ptr != 0){
 				break;
-			}else{
-				boost::this_thread::yield();
 			}
 		}
 
-		// push into rvector
-		_rvector_ptr->re_vector.push_back(p);
-	
-
 		// scan
-		if(_rvector_ptr->re_vector.size() > 32 && _rvector_ptr->re_vector.size() > llen.load()){
+		if(_rvector_ptr->re_vector.size() >= 32 && _rvector_ptr->re_vector.size() > llen.load()){
 			// scan hazard pointers list collecting all non-null ptrs
 			std::vector<void *> hvector;
 			for(_list_node * _node = _head; _node; _node = _node->next){
@@ -190,6 +193,9 @@ public:
 				}
 			}
 		}
+
+		// push into rvector
+		_rvector_ptr->re_vector.push_back(p);
 		
 		_rvector_ptr->active.store(1);
 	}
