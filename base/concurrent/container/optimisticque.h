@@ -113,7 +113,7 @@ public:
 		
 			if (_plist->_hazard->head.compare_exchange_weak(_ptr_node[0]->_hazard, _ptr_node[1]->_hazard)){
 				data = _ptr_node[1]->_hazard->data;
-				_hsys.retire(_ptr_node[1]->_hazard);
+				_hsys.retire(_ptr_node[0]->_hazard);
 				_plist->_hazard->size--;
 				
 				break;
