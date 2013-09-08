@@ -10,14 +10,14 @@
 
 #include <boost/bind.hpp>
 #include <boost/atomic.hpp>
-#include <boost/pool/pool_alloc.hpp>
 
 #include <Hemsleya/base/concurrent/container/detail/_hazard_ptr.h>
+#include <Hemsleya/base/concurrent/abstract_factory/abstract_factory.h>
 
 namespace Hemsleya {
 namespace container{
 
-template <typename T, typename _Allocator = boost::pool_allocator<T> >
+template <typename T, typename _Allocator = std::allocator<T> >
 class msque{
 private:
 	struct _list_node{
@@ -74,32 +74,27 @@ public:
 		_hazard_sys.acquire(&_hp, 1);
 		while(1){
 			_hp_list->_hazard = __list.load();
-
 			_hp->_hazard = _hp_list->_hazard->_end.load();
 
-			_list_node * next = _hp->_hazard->_next.load();
-
-			if(_hp->_hazard != _hp_list->_hazard->_end.load()){
-				_hp->_hazard = _hp_list->_hazard->_end.load();
-				continue;
-			}
-			 
+			_list_node * next = _hp->_hazard->_next.load();			 
 			if(next != 0){
 				_hp_list->_hazard->_end.compare_exchange_weak(_hp->_hazard, next);
-				_hp->_hazard = _hp_list->_hazard->_end.load();
 				continue;
 			}
 
-			_list_node * _null = 0;
-			if (_hp->_hazard->_next.compare_exchange_weak(_null, _node)){
+			if(_hp->_hazard != _hp_list->_hazard->_end.load()){
+				continue;
+			}
+
+			if (_hp->_hazard->_next.compare_exchange_weak(next, _node)){
+				_hp_list->_hazard->_end.compare_exchange_weak(_hp->_hazard, _node); 
+				_hp_list->_hazard->_size++;
 				break;
 			}
 		}
-		_hp_list->_hazard->_end.compare_exchange_weak(_hp->_hazard, _node); 
 
 		_hazard_sys.release(_hp);
-
-		_hp_list->_hazard->_size++;
+		_hazard_list.release(_hp_list);
 	}
 
 	bool pop(T & data){
@@ -117,23 +112,23 @@ public:
 			
 			if(_hp_node[1]->_hazard == 0){
 				ret = false;
-				goto end;
+				break;
 			}
 
 			if(_hp_node[0]->_hazard != _hp_list->_hazard->_begin.load()){
-				_hp_node[1]->_hazard = _hp_list->_hazard->_begin.load();
+				_hp_node[0]->_hazard = _hp_list->_hazard->_begin.load();
 				continue;
 			}
 
 			if(_hp_list->_hazard->_begin.compare_exchange_strong(_hp_node[0]->_hazard, _hp_node[1]->_hazard)){
+				data = _hp_node[1]->_hazard->data;
+				_hazard_sys.retire(_hp_node[0]->_hazard);
+				_hp_list->_hazard->_size--;
 				break;
 			}
 		}
-		data = _hp_node[1]->_hazard->data;
-		_hazard_sys.retire(_hp_node[0]->_hazard);
-		_hp_list->_hazard->_size--;
 
-	end:
+		_hazard_list.release(_hp_list);
 		_hazard_sys.release(_hp_node[0]);
 		_hazard_sys.release(_hp_node[1]);
 
@@ -178,25 +173,18 @@ private:
 	}
 
 	_list_node * get_node(const T & data){
-		_list_node * _node = __node_alloc.allocate(1);
-		while(_node == 0){_node = __node_alloc.allocate(1);}
-		new (_node) _list_node(data);
-
-		_node->_next = 0;
-		
-		return _node;
+		return _abstract_factory_node_.create_product(data);
 	}
 
 	void put_node(_list_node * _p){
-		_p->~_list_node();
-		__node_alloc.deallocate(_p, 1);
+		_abstract_factory_node_.release_product(_p, 1);
 	}
 
 private:
 	boost::atomic<_list *> __list;
 	_list_alloc __list_alloc;
 	_node_alloc __node_alloc;
-	_Allocator __T_alloc;
+	abstract_factory::abstract_factory<_list_node, _node_alloc> _abstract_factory_node_;
 
 	_hazard_system _hazard_sys;
 	_hazard_list_ _hazard_list;

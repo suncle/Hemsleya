@@ -67,14 +67,13 @@ private:
 
 public:
 	_hazard_system(fn_dealloc _D) : _fn_dealloc(_D){
-		llen.store(0);
-
 		re_list_set.resize(8);
 		for(int i = 0; i < 8; i++){
 			re_list_set[i] = new recover_list;
 			re_list_set[i]->active.store(1);
 		}
 
+		llen.store(1);
 		_head = _get_node();
 	}
 
@@ -106,23 +105,26 @@ private:
 	
 public:
 	void acquire(_hazard_ptr_ ** ptr, uint32_t size ){
+		_list_node * _node = _head; 
 		while(size > 0){
 			// try to reuse a retired hazard ptr
-			for(_list_node * _node = _head; _node; _node = _node->next){
+			for( ; _node; _node = _node->next){
 				if (_node->_hazard._active.exchange(0) == 1){
 					break;
 				}
 			}
 
-			// alloc a new node 
-			_list_node * _new_node = _get_node();
-			_new_node->_hazard._active.store(0);
-			// increment the list length
-			llen++;
-			// push into list
-			_new_node->next = _head.exchange(_new_node);
+			if (!_node){
+				// alloc a new node 
+				_node = _get_node();
+				_node->_hazard._active.store(0);
+				// increment the list length
+				llen++;
+				// push into list
+				_node->next = _head.exchange(_node);
+			}
 
-			ptr[--size] = &(_new_node->_hazard);
+			ptr[--size] = &(_node->_hazard);
 		}
 	}
 
