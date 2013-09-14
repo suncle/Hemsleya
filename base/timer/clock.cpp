@@ -52,7 +52,7 @@ struct clock_init _clock_init;
 uint64_t clock(){
 	if (detail::_clock_init.bGetTickCount){
 		time_t _time;
-		return ((uint64_t)time(&_time) - detail::_clock_init.begintime)*1000 + (GetTickCount() - detail::_clock_init.beginclock)%1000;
+		return ((uint64_t)time(&_time) - detail::_clock_init.begintime)*1000 + GetTickCount()%1000;
 	}else{
 		return GetTickCount64() - detail::_clock_init.beginclock;
 	}
