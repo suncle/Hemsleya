@@ -7,9 +7,9 @@
 #ifndef _BUFF_POOL_H
 #define _BUFF_POOL_H
 
-#include <angelica/container/no_blocking_pool.h>
+#include <Hemsleya/base/concurrent/abstract_factory/abstract_factory.h>
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 
 namespace detail {
@@ -17,19 +17,11 @@ namespace detail {
 class BuffPool{
 public:
 	static void Init(size_t _page_size){
-		m_pBuffPool = new BuffPool();
-		m_pBuffPool->_size = _page_size;
+		_size = _page_size;
 	}
 
-	static char * get(size_t _size){
-		char * buff = 0;
-		if (_size <= m_pBuffPool->_size){
-			if ((buff = m_pBuffPool->_buff_pool.pop()) == 0){
-				buff = new char[m_pBuffPool->_size];
-			}
-		}else{
-			buff = new char[_size];
-		}
+	static char * get(size_t _size_){
+		char * buff = _buff_pool.create_product(_size_);
 
 #ifdef _DEBUG
 		memset(buff, 0, _size);
@@ -38,19 +30,13 @@ public:
 		return buff;
 	}
 
-	static void release(char * buff, size_t _size){
-		if (_size <= m_pBuffPool->_size){
-			m_pBuffPool->_buff_pool.put(buff);
-		}else{
-			free(buff);
-		}
+	static void release(char * buff, size_t _size_){
+		_buff_pool.release_product(buff, _size_);
 	}
 
 private:
-	static BuffPool * m_pBuffPool;
-
-	size_t _size;
-	angelica::container::no_blocking_pool<char > _buff_pool;
+	static size_t _size;
+	static Hemsleya::abstract_factory::abstract_factory<char> _buff_pool;
 
 };
 
@@ -59,6 +45,6 @@ extern unsigned int page_size;
 } //detail
 
 } //async_net
-} //angelica
+} //Hemsleya
 
 #endif //_BUFF_POOL_H

@@ -6,7 +6,7 @@
  */
 #include "buff_pool.h"
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 
 namespace detail {
@@ -17,9 +17,8 @@ unsigned int page_size = 8192;
 unsigned int page_size = 32768;
 #endif
 
-BuffPool * BuffPool::m_pBuffPool = 0;
 
 } //detail
 
 } //async_net
-} //angelica
+} //Hemsleya

@@ -13,11 +13,11 @@
 #include "winhdef.h"
 #include "../error_code.h"
 
-#include <angelica/container/no_blocking_pool.h>
+#include <Hemsleya/base/concurrent/abstract_factory/abstract_factory.h>
 
 #include <boost/function.hpp>
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 
 class socket_base;
@@ -46,40 +46,26 @@ template<typename OverlappedEX_Type>
 class OverlappedEXPool{
 public:
 	static void Init(){
-		m_pOverlappedEXPool = new OverlappedEXPool();
 	}
 
 	static OverlappedEX_Type * get(){
-		OverlappedEX_Type * _OverlappedEX = m_pOverlappedEXPool->_OverlappedEX_pool.pop();
-		if (_OverlappedEX == 0){
-			_OverlappedEX = new OverlappedEX_Type();
-		}else{
-			new (_OverlappedEX) OverlappedEX_Type();
-		}
-
-		return _OverlappedEX;
+		return _OverlappedEX_pool.create_product();
 	}
 
 	static void release(OverlappedEX_Type * _OverlappedEX){
-		_OverlappedEX->~OverlappedEX_Type();
-		m_pOverlappedEXPool->_OverlappedEX_pool.put(_OverlappedEX);
+		_OverlappedEX_pool.release_product(_OverlappedEX, 1);
 	}
 
 private:
-	static OverlappedEXPool * m_pOverlappedEXPool;
-
-	angelica::container::no_blocking_pool<typename OverlappedEX_Type > _OverlappedEX_pool;
+	static Hemsleya::abstract_factory::abstract_factory<typename OverlappedEX_Type > _OverlappedEX_pool;
 
 };
-
-template<typename OverlappedEX_Type>
-OverlappedEXPool<OverlappedEX_Type > * OverlappedEXPool<OverlappedEX_Type >::m_pOverlappedEXPool = 0;
 
 }// detail
 
 } //win32
 } //async_net
-} //angelica
+} //Hemsleya
 
 #endif //_WIN32
 #endif //_OVERLAPPED_H

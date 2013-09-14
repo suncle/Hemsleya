@@ -12,12 +12,12 @@
 #include <boost/function.hpp>
 #include <boost/atomic.hpp>
 
-#include <angelica/detail/tools.h>
+#include <Hemsleya/base/tools/tools.h>
 
 #include "async_service.h"
 #include "error_code.h"
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 	
 namespace detail {
@@ -102,6 +102,6 @@ protected:
 };		
 	
 } //async_net
-} //angelica
+} //Hemsleya
 
 #endif //_SOCKET_BASE_H

@@ -9,41 +9,33 @@
 
 #include "sock_buff.h"
 
-#include <angelica/container/no_blocking_pool.h>
+#include <Hemsleya/base/concurrent/abstract_factory/abstract_factory.h>
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 
 namespace detail {
 
 class ReadBuffPool{
 public:
-	static void Init(){
-		m_pReadBuffPool = new ReadBuffPool();
-	}
+	static void Init(){}
 
 	static read_buff * get(){
-		read_buff * _read_buff = m_pReadBuffPool->_read_buff_pool.pop();
-		if (_read_buff == 0){
-			_read_buff = new read_buff();
-		}
-		return _read_buff;
+		return _read_buff_pool.create_product();
 	}
 
 	static void release(read_buff * _read_buff){
-		m_pReadBuffPool->_read_buff_pool.put(_read_buff);
+		_read_buff_pool.release_product(_read_buff, 1);
 	}
 
 private:
-	static ReadBuffPool * m_pReadBuffPool;
-
-	angelica::container::no_blocking_pool<read_buff > _read_buff_pool;
+	static Hemsleya::abstract_factory::abstract_factory<read_buff> _read_buff_pool;
 
 };
 
 } //detail
 
 } //async_net
-} //angelica
+} //Hemsleya
 
 #endif //_READ_BUFF_POOL_H

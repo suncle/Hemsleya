@@ -8,7 +8,7 @@
 #ifndef _ERROR_H
 #define _ERROR_H
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 
 typedef int _error_code;
@@ -22,6 +22,6 @@ enum err_code{
 };
 
 } //async_net
-} //angelica
+} //Hemsleya
 
 #endif //_ERROR_H

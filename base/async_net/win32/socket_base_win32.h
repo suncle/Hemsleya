@@ -16,9 +16,7 @@
 #include <boost/atomic.hpp>
 #include <boost/function.hpp>
 
-#include <angelica/container/no_blocking_pool.h>
-
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 namespace win32 {
 
@@ -81,7 +79,7 @@ private:
 
 } //win32
 } //async_net
-} //angelica
+} //Hemsleya
 
 #endif //_WIN32
 #endif //_BASE_SOCKET_WIN32_H

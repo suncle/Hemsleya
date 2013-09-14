@@ -10,12 +10,8 @@
 #include "read_buff_pool.h"
 #include "write_buff_pool.h"
 
-namespace angelica { 
+namespace Hemsleya { 
 namespace async_net { 
-
-void async_service::post(fnHandle fn){
-	event_que.push(fn);
-}
 
 void async_service::Init(){
 	detail::SocketPool::Init();
@@ -24,22 +20,10 @@ void async_service::Init(){
 	detail::WriteBuffPool::Init();
 }
 
-bool async_service::do_one(){
-	fnHandle do_fn;
-	if(event_que.pop(do_fn)){
-		do_fn();
-		return true;
-	}
-
-	return false;
-}
-
 void async_service::run(){
 	thread_count++;
 
 	try{
-		while(do_one());
-
 		network();
 	}catch(...){
 		//error log	
@@ -49,4 +33,4 @@ void async_service::run(){
 }
 
 } //async_net
-} //angelica
+} //Hemsleya

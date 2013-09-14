@@ -13,7 +13,7 @@
 
 #include <string>
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 namespace win32 {
 class socket_base_win32;
@@ -48,6 +48,6 @@ public:
 };
 
 } //async_net
-} //angelica
+} //Hemsleya
 
 #endif //_address_h

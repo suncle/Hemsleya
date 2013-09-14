@@ -15,12 +15,12 @@
 
 #include <boost/function.hpp>
 
-#include <angelica/container/swapque.h>
-#include <angelica/container/no_blocking_pool.h>
+#include <Hemsleya/base/concurrent/container/msque.h>
+#include <Hemsleya/base/concurrent/abstract_factory/abstract_factory.h>
 
 #include "error_code.h"
 
-namespace angelica { 
+namespace Hemsleya { 
 namespace async_net { 
 namespace win32 { 
 #ifdef _WIN32
@@ -37,9 +37,10 @@ public:
 	async_service();
 	~async_service();
 
-	void run();
+private:
+	async_service(const async_service & _async_service){}
 
-	void post(fnHandle fn);
+	void run();
 
 private:
 	void Init();
@@ -62,12 +63,10 @@ private:
 	boost::uint32_t nConnect;
 	unsigned long nMaxConnect;
 
-	angelica::container::swapque<fnHandle > event_que;
-
 };  
 
 } //async_net
-} //angelica
+} //Hemsleya
 
 
 #endif //_NET_SERVICE_H

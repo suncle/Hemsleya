@@ -8,7 +8,7 @@
 
 #include "winhdef.h"
 
-#include <angelica/exception/exception.h>
+#include <Hemsleya/base/exception/exception.h>
 
 #include "../async_service.h"
 #include "../socket.h"
@@ -20,7 +20,7 @@
 #include "Overlapped.h"
 #include "socket_base_win32.h"
 
-namespace angelica { 
+namespace Hemsleya { 
 namespace async_net { 
 
 async_service::async_service() : nConnect(0), nMaxConnect(0xffff) {
@@ -29,7 +29,7 @@ async_service::async_service() : nConnect(0), nMaxConnect(0xffff) {
 
 	hIOCP = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, NULL, 0);
 	if(hIOCP == 0) {
-		throw angelica::exception::exception("Error: CreateIoCompletionPort failed.");
+		throw Hemsleya::exception::exception("Error: CreateIoCompletionPort failed.");
 	}
 
 	win32::detail::OverlappedEXPool<win32::OverlappedEX >::Init();
@@ -85,6 +85,6 @@ bool async_service::network() {
 }
 
 } //async_net
-} //angelica
+} //Hemsleya
 
 #endif //_WIN32

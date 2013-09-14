@@ -8,41 +8,33 @@
 #define _WRITE_BUFF_POOL_H
 
 #include "sock_buff.h"
-#include <angelica/container/no_blocking_pool.h>
+#include <Hemsleya/base/concurrent/abstract_factory/abstract_factory.h>
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 
 namespace detail {
 
 class WriteBuffPool{
 public:
-	static void Init(){
-		m_pWriteBuffPool = new WriteBuffPool();
-	}
+	static void Init(){}
 
 	static write_buff * get(){
-		write_buff * _write_buff = m_pWriteBuffPool->_write_buff_pool.pop();
-		if (_write_buff == 0){
-			_write_buff = new write_buff();
-		}
-		return _write_buff;
+		return _write_buff_pool.create_product();
 	}
 
 	static void release(write_buff * _write_buff){
-		m_pWriteBuffPool->_write_buff_pool.put(_write_buff);
+		_write_buff_pool.release_product(_write_buff, 1);
 	}
 
 private:
-	static WriteBuffPool * m_pWriteBuffPool;
-
-	angelica::container::no_blocking_pool<write_buff > _write_buff_pool;
+	static Hemsleya::abstract_factory::abstract_factory<write_buff > _write_buff_pool;
 
 };
 
 } //detail
 
 } //async_net
-} //angelica
+} //Hemsleya
 
 #endif // _write_buff_pool_h

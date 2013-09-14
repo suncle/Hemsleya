@@ -6,14 +6,12 @@
  */
 #include "write_buff_pool.h"
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 
 namespace detail {
 
-WriteBuffPool * WriteBuffPool::m_pWriteBuffPool = 0;
-
 } //detail
 
 } //async_net
-} //angelica
+} //Hemsleya

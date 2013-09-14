@@ -6,7 +6,8 @@
  */
 #ifdef _WIN32
 
-#include <angelica/exception/exception.h>
+#include <Hemsleya/base/exception/exception.h>
+#include <Hemsleya/base/concurrent/container/msque.h>
 
 #include "winhdef.h"
 
@@ -20,15 +21,15 @@
 #include "socket_base_win32.h"
 #include "Overlapped.h"
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 namespace win32 {
  
-static angelica::container::no_blocking_pool<unsigned int> _sock_pool;
+container::msque<SOCKET> _sock_pool;
 
 SOCKET Getfd(){
-	SOCKET fd = (SOCKET)_sock_pool.pop();
-	if (fd == 0){
+	SOCKET fd = 0;
+	if (!_sock_pool.pop(fd)){
 		fd = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
 	}
 	
@@ -74,7 +75,7 @@ void Releasefd(SOCKET fd){
 	if (_sock_pool.size() > 1024){
 		::closesocket(fd);
 	}else{
-		_sock_pool.put((unsigned int *)fd);
+		_sock_pool.push(fd);
 	}
 }
 
@@ -85,12 +86,12 @@ socket_base_win32::socket_base_win32(async_service & _impl) :
 	fd = win32::Getfd();
 
 	if (fd == INVALID_SOCKET){
-		throw angelica::exception::exception("INVALID_SOCKET");
+		throw Hemsleya::exception::exception("INVALID_SOCKET");
 	}
 
 	if (CreateIoCompletionPort((HANDLE)fd, _service->hIOCP, (ULONG_PTR)this, 0) != _service->hIOCP){
 		DWORD err = WSAGetLastError();
-		BOOST_THROW_EXCEPTION(angelica::exception::exception("Error: CreateIoCompletionPort failed.", err));
+		throw Hemsleya::exception::exception("Error: CreateIoCompletionPort failed.", err);
 	}
 }
 
@@ -528,6 +529,6 @@ void socket_base_win32::OnConnect(_error_code err) {
 
 } //win32
 } //async_net
-} //angelica
+} //Hemsleya
 
 #endif //_WIN32

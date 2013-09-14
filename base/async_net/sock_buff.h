@@ -12,7 +12,7 @@
 #include "win32/winhdef.h"
 #endif
 
-#include <angelica/container/msque.h>
+#include <Hemsleya/base/concurrent/container/msque.h>
 
 #include <vector>
 #include <cstddef>
@@ -20,9 +20,9 @@
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/pool/pool_alloc.hpp>
 
-#include "angelica/async_net/socket_base.h"
+#include "socket_base.h"
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 
 namespace detail {
@@ -94,6 +94,6 @@ private:
 
 } //detail
 } /* namespace async_net */
-} /* namespace angelica */
+} /* namespace Hemsleya */
 
 #endif /* _SOCK_BUFF_H */

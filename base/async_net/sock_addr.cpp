@@ -6,7 +6,7 @@
  */
 #include "sock_addr.h"
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 
 sock_addr::sock_addr(){
@@ -56,4 +56,4 @@ unsigned short sock_addr::port() {
 }
 
 } //async_net
-} //angelica
+} //Hemsleya

@@ -11,7 +11,7 @@
 #include "win32/socket_base_win32.h"
 #endif //_WIN32
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 
 socket::socket(){
@@ -115,4 +115,4 @@ void socket::register_send_handle(SendHandle onSend){
 
 
 } //async_net
-} //angelica
+} //Hemsleya

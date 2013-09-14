@@ -12,7 +12,7 @@
 #include "read_buff_pool.h"
 #include "write_buff_pool.h"
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 
 socket_base::socket_base(async_service & _service_) :
@@ -60,4 +60,4 @@ void socket_base::register_send_handle(SendHandle onSend){
 }
 
 } //async_net
-} //angelica
+} //Hemsleya

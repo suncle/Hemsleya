@@ -10,7 +10,7 @@
 #include "socket_base.h"
 #include <boost/atomic.hpp>
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 namespace win32 {
 class socket_base_win32;
@@ -71,6 +71,6 @@ private:
 };
 
 } //async_net
-} //angelica
+} //Hemsleya
 
 #endif

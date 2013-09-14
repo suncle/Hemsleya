@@ -11,25 +11,25 @@
 #include "win32/socket_base_win32.h"
 #endif //_WIN32
 
-#include <angelica/container/no_blocking_pool.h>
+#include <Hemsleya/base/concurrent/abstract_factory/abstract_factory.h>
+#include <Hemsleya/base/concurrent/container/msque.h>
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 
 namespace detail {
+	
+
 
 class SocketPool{
 public:
 	static void Init(){
-		m_pSocketPool = new SocketPool();
 	}
 
 	static socket_base * get(async_service & _impl){
-		socket_base * _socket = m_pSocketPool->_socket_pool.pop();
-		if (_socket == 0){
-#ifdef _WIN32
-			_socket = new win32::socket_base_win32(_impl);
-#endif //_WIN32
+		socket_base * _socket = 0;
+		if (!_socket_pool.pop(_socket)){
+			_socket_factory.create_product(_impl);
 		}
 		_socket->isclosed = false;
 		_socket->isrecv = false;
@@ -39,23 +39,20 @@ public:
 	}
 
 	static void release(socket_base * _socket){
-		if (m_pSocketPool->_socket_pool.size() > 1024){
-			delete _socket;
-		}else{
-			m_pSocketPool->_socket_pool.put(_socket);
-		}
+		_socket_pool.push(_socket);
 	}
 
 private:	
-	static SocketPool * m_pSocketPool;
-
-	angelica::container::no_blocking_pool<socket_base > _socket_pool;
+#ifdef _WINDOWS
+	static Hemsleya::abstract_factory::abstract_factory<win32::socket_base_win32 > _socket_factory;
+#endif
+	static Hemsleya::container::msque<socket_base * > _socket_pool;
 
 };
 
 } //detail
 
 } //async_net
-} //angelica
+} //Hemsleya
 
 #endif //_SOCKE_POOLT_H

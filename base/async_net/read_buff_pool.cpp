@@ -6,14 +6,12 @@
  */
 #include "read_buff_pool.h"
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 
 namespace detail {
 
-ReadBuffPool * ReadBuffPool::m_pReadBuffPool = 0;
-
 } //detail
 
 } //async_net
-} //angelica
+} //Hemsleya

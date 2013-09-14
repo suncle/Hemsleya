@@ -7,7 +7,7 @@
  */
 #include "Overlapped.h"
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 namespace win32 {
 
@@ -17,4 +17,4 @@ namespace detail {
 
 } //win32
 } //async_net
-} //angelica
+} //Hemsleya

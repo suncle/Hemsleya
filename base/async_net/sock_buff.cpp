@@ -7,7 +7,7 @@
 #include "sock_buff.h"
 #include "buff_pool.h"
 
-namespace angelica {
+namespace Hemsleya {
 namespace async_net {
 namespace detail {
 
@@ -261,4 +261,4 @@ void write_buff::clear() {
 
 } //detail
 } /* namespace async_net */
-} /* namespace angelica */
+} /* namespace Hemsleya */
