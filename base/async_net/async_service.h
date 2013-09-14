@@ -30,8 +30,6 @@ class socket_base_linux;
 #endif
 }// win32
 
-typedef boost::function<void()> fnHandle;
-
 class async_service{
 public:
 	async_service();

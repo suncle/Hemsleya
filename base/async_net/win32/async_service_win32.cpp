@@ -65,9 +65,6 @@ bool async_service::network() {
 	}else if (pOverlappedEX->type == win32_tcp_connect_complete){
 		((win32::socket_base_win32*)pHandle)->OnConnect(err);
 		win32::detail::OverlappedEXPool<win32::OverlappedEX >::release(pOverlappedEX);
-	//}else if (pOverlappedEX->type == win32_tcp_disconnect_complete){
-	//	((win32::socket_base_win32*)pHandle)->onDeconnect(err);
-	//	win32::detail::OverlappedEXPool<win32::OverlappedEX >::release(pOverlappedEX);
 	}else if (pOverlappedEX->type == win32_tcp_accept_complete){
 		win32::OverlappedEX_Accept * _OverlappedEXAccept = container_of(pOverlappedEX, win32::OverlappedEX_Accept, overlapex);
 		((win32::socket_base_win32*)pHandle)->OnAccept(_OverlappedEXAccept->socket_, nBytesTransferred, err);
