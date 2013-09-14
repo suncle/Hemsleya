@@ -18,11 +18,6 @@
 #define container_of(ptr, type, member) (type *)( (char *)ptr - offsetof(type, member) )
 #endif //container_of
 
-#ifndef offsetof
-// copy from include/linux/stddef.h
-#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
-#endif //offsetof
-
 void _trace(char * format, ...);
 
 #include <boost/cstdint.hpp>
