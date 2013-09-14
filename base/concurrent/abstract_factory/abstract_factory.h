@@ -59,7 +59,7 @@ public:
 		T * pT = _alloc(count);
 		
 		while(count > 0){
-			new(&pT[--count]) T();
+			new(&pT[--count]) T;
 		}
 		
 		return pT;
@@ -68,13 +68,13 @@ public:
 	T * create_product(){
 		T * pT = _alloc(1);
 		
-		new(pT) T();
+		new(pT) T;
 		
 		return pT;
 	}
 
 	template <size_t count, typename t1>
-	T * create_product(t1 _t1){
+	T * create_product(t1 & _t1){
 		T * pT = _alloc(count);
 
 		while(count > 0){
@@ -85,7 +85,7 @@ public:
 	}
 
 	template <typename t1>
-	T * create_product(t1 _t1){
+	T * create_product(t1 & _t1){
 		T * pT = _alloc(1);
 
 		new(pT) T(_t1);
@@ -94,7 +94,7 @@ public:
 	}
 
 	template <size_t count, typename t1, typename t2>
-	T * create_product(t1 _t1, t2 _t2){
+	T * create_product(t1 & _t1, t2 & _t2){
 		T * pT = _alloc(count);
 
 		while(count > 0){
@@ -105,7 +105,7 @@ public:
 	}
 
 	template <typename t1, typename t2>
-	T * create_product(t1 _t1, t2 _t2){
+	T * create_product(t1 & _t1, t2 & _t2){
 		T * pT = _alloc(count);
 
 		new(pT) T(_t1, _t2);
@@ -114,7 +114,7 @@ public:
 	}
 
 	template <size_t count, typename t1, typename t2, typename t3>
-	T * create_product(t1 _t1, t2 _t2, t3 _t3){
+	T * create_product(t1 & _t1, t2 & _t2, t3 & _t3){
 		T * pT = _alloc(count);
 		
 		while(count > 0){
@@ -125,7 +125,7 @@ public:
 	}
 
 	template <typename t1, typename t2, typename t3>
-	T * create_product(t1 _t1, t2 _t2, t3 _t3){
+	T * create_product(t1 & _t1, t2 & _t2, t3 & _t3){
 		T * pT = _alloc(count);
 		
 		new(pT) T(_t1, _t2, _t3);
@@ -134,7 +134,7 @@ public:
 	}
 
 	template <size_t count, typename t1, typename t2, typename t3, typename t4>
-	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4){
+	T * create_product(t1 & _t1, t2 & _t2, t3 & _t3, t4 & _t4){
 		T * pT = _alloc(count);
 		
 		while(count > 0){
@@ -145,7 +145,7 @@ public:
 	}
 
 	template <typename t1, typename t2, typename t3, typename t4>
-	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4){
+	T * create_product(t1 & _t1, t2 & _t2, t3 & _t3, t4 & _t4){
 		T * pT = _alloc(count);
 		
 		new(pT) T(_t1, _t2, _t3, _t4);
@@ -154,7 +154,7 @@ public:
 	}
 
 	template <size_t count, typename t1, typename t2, typename t3, typename t4, typename t5>
-	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5){
+	T * create_product(t1 & _t1, t2 & _t2, t3 & _t3, t4 & _t4, t5 & _t5){
 		T * pT = _alloc(count);
 		
 		while(count > 0){
@@ -165,7 +165,7 @@ public:
 	}
 
 	template <typename t1, typename t2, typename t3, typename t4, typename t5>
-	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5){
+	T * create_product(t1 & _t1, t2 & _t2, t3 & _t3, t4 & _t4, t5 & _t5){
 		T * pT = _alloc(count);
 		
 		new(pT) T(_t1, _t2, _t3, _t4, _t5);
@@ -174,7 +174,7 @@ public:
 	}
 
 	template <size_t count, typename t1, typename t2, typename t3, typename t4, typename t5, typename t6>
-	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5, t6 _t6){
+	T * create_product(t1 & _t1, t2 & _t2, t3 & _t3, t4 & _t4, t5 & _t5, t6 & _t6){
 		T * pT = _alloc(count);
 		
 		while(count > 0){
@@ -185,7 +185,7 @@ public:
 	}
 
 	template <typename t1, typename t2, typename t3, typename t4, typename t5, typename t6>
-	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5, t6 _t6){
+	T * create_product(t1 & _t1, t2 & _t2, t3 & _t3, t4 & _t4, t5 & _t5, t6 & _t6){
 		T * pT = _alloc(count);
 		
 		new(pT) T(_t1, _t2, _t3, _t4, _t5, _t6);
@@ -194,7 +194,7 @@ public:
 	}
 
 	template <size_t count, typename t1, typename t2, typename t3, typename t4, typename t5, typename t6, typename t7>
-	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5, t6 _t6, t7 _t7){
+	T * create_product(t1 & _t1, t2 & _t2, t3 & _t3, t4 & _t4, t5 & _t5, t6 & _t6, t7 & _t7){
 		T * pT = _alloc(count);
 		
 		while(count > 0){
@@ -205,7 +205,7 @@ public:
 	}
 
 	template <typename t1, typename t2, typename t3, typename t4, typename t5, typename t6, typename t7>
-	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5, t6 _t6, t7 _t7){
+	T * create_product(t1 & _t1, t2 & _t2, t3 & _t3, t4 & _t4, t5 & _t5, t6 & _t6, t7 & _t7){
 		T * pT = _alloc(count);
 		
 		new(pT) T(_t1, _t2, _t3, _t4, _t5, _t6, _t7);
@@ -214,7 +214,7 @@ public:
 	}
 
 	template <size_t count, typename t1, typename t2, typename t3, typename t4, typename t5, typename t6, typename t7, typename t8>
-	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5, t6 _t6, t7 _t7, t8 _t8){
+	T * create_product(t1 & _t1, t2 & _t2, t3 & _t3, t4 & _t4, t5 & _t5, t6 & _t6, t7 & _t7, t8 & _t8){
 		T * pT = _alloc(count);
 		
 		while(count > 0){
@@ -225,7 +225,7 @@ public:
 	}
 
 	template <typename t1, typename t2, typename t3, typename t4, typename t5, typename t6, typename t7, typename t8>
-	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5, t6 _t6, t7 _t7, t8 _t8){
+	T * create_product(t1 & _t1, t2 & _t2, t3 & _t3, t4 & _t4, t5 & _t5, t6 & _t6, t7 & _t7, t8 & _t8){
 		T * pT = _alloc(count);
 		
 		new(pT) T(_t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8);
@@ -234,7 +234,7 @@ public:
 	}
 
 	template <size_t count, typename t1, typename t2, typename t3, typename t4, typename t5, typename t6, typename t7, typename t8, typename t9>
-	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5, t6 _t6, t7 _t7, t8 _t8, t9 _t9){
+	T * create_product(t1 & _t1, t2 & _t2, t3 & _t3, t4 & _t4, t5 & _t5, t6 & _t6, t7 & _t7, t8 & _t8, t9 & _t9){
 		T * pT = _alloc(count);
 		
 		while(count > 0){
@@ -245,7 +245,7 @@ public:
 	}
 
 	template <typename t1, typename t2, typename t3, typename t4, typename t5, typename t6, typename t7, typename t8, typename t9>
-	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5, t6 _t6, t7 _t7, t8 _t8, t9 _t9){
+	T * create_product(t1 & _t1, t2 & _t2, t3 & _t3, t4 & _t4, t5 & _t5, t6 & _t6, t7 & _t7, t8 & _t8, t9 & _t9){
 		T * pT = _alloc(count);
 		
 		new(pT) T(_t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9);
@@ -254,7 +254,7 @@ public:
 	}
 
 	template <size_t count, typename t1, typename t2, typename t3, typename t4, typename t5, typename t6, typename t7, typename t8, typename t9, typename t10>
-	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5, t6 _t6, t7 _t7, t8 _t8, t9 _t9, t10 _t10){
+	T * create_product(t1 & _t1, t2 & _t2, t3 & _t3, t4 & _t4, t5 & _t5, t6 & _t6, t7 & _t7, t8 & _t8, t9 & _t9, t10 & _t10){
 		T * pT = _alloc(count);
 		
 		while(count > 0){
@@ -265,7 +265,7 @@ public:
 	}
 
 	template <typename t1, typename t2, typename t3, typename t4, typename t5, typename t6, typename t7, typename t8, typename t9, typename t10>
-	T * create_product(t1 _t1, t2 _t2, t3 _t3, t4 _t4, t5 _t5, t6 _t6, t7 _t7, t8 _t8, t9 _t9, t10 _t10){
+	T * create_product(t1 & _t1, t2 & _t2, t3 & _t3, t4 & _t4, t5 & _t5, t6 & _t6, t7 & _t7, t8 & _t8, t9 & _t9, t10 & _t10){
 		T * pT = _alloc(count);
 		
 		new(pT) T(_t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9, _t10);
