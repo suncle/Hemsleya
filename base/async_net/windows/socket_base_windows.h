@@ -1,13 +1,13 @@
 /*
- * base_socket_win32.h
+ * base_socket_WINDOWS.h
  *         Created on: 2012-10-16
  *			   Author: qianqians
- * base socket at win32
+ * base socket at windows
  */
-#ifndef _BASE_SOCKET_WIN32_H
-#define _BASE_SOCKET_WIN32_H
+#ifndef _BASE_SOCKET_WINDOWS_H
+#define _BASE_SOCKET_WINDOWS_H
 
-#ifdef _WIN32
+#ifdef _WINDOWS
 
 #include "winhdef.h"
 
@@ -18,15 +18,15 @@
 
 namespace Hemsleya {
 namespace async_net {
-namespace win32 {
+namespace windows {
 
-class socket_base_win32 : public socket_base{
+class socket_base_WINDOWS : public socket_base{
 public:
-	socket_base_win32(async_service & _impl);
-	~socket_base_win32();
+	socket_base_WINDOWS(async_service & _impl);
+	~socket_base_WINDOWS();
 
 private:
-	void operator =(const socket_base_win32 & s){};
+	void operator =(const socket_base_WINDOWS & s){};
 
 public:
 	int bind(sock_addr addr);
@@ -77,9 +77,9 @@ private:
 	
 };
 
-} //win32
+} //windows
 } //async_net
 } //Hemsleya
 
-#endif //_WIN32
-#endif //_BASE_SOCKET_WIN32_H
+#endif //_WINDOWS
+#endif //_BASE_SOCKET_WINDOWS_H

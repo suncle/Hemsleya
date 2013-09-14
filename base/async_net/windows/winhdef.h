@@ -7,7 +7,7 @@
 #ifndef _WINHDEF_H
 #define _WINHDEF_H
 
-#ifdef _WIN32
+#ifdef _WINDOWS
 
 #include <WinSock2.h>
 #include <Mswsock.h>
@@ -26,5 +26,5 @@ enum win32_event_type{
 	win32_stop_,
 };
 
-#endif //_WIN32
+#endif //_WINDOWS
 #endif //_WINHDEF_H

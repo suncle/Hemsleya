@@ -11,7 +11,7 @@ namespace async_net {
 
 namespace detail {
 
-#ifdef _WIN32
+#ifdef _WINDOWS
 unsigned int page_size = 8192;
 #elif __linux__
 unsigned int page_size = 32768;

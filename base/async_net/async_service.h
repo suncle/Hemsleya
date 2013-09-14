@@ -7,8 +7,8 @@
 #ifndef _NET_SERVICE_H
 #define _NET_SERVICE_H
 
-#ifdef _WIN32
-#include "win32/winhdef.h"
+#ifdef _WINDOWS
+#include "windows/winhdef.h"
 #elif __linux__ 
 //class socket_base_linux;
 #endif
@@ -22,13 +22,13 @@
 
 namespace Hemsleya { 
 namespace async_net { 
-namespace win32 { 
-#ifdef _WIN32
-class socket_base_win32;
+namespace windows { 
+#ifdef _WINDOWS
+class socket_base_WINDOWS;
 #elif __linux__ 
 class socket_base_linux;
 #endif
-}// win32
+}// windows
 
 class async_service{
 public:
@@ -48,13 +48,13 @@ private:
 	bool do_one();
 
 private:
-#ifdef _WIN32
+#ifdef _WINDOWS
 	HANDLE hIOCP;
-	friend class win32::socket_base_win32;
+	friend class windows::socket_base_WINDOWS;
 #elif __linux__
 	int epollfd_write, epollfd_read;
-	friend class win32::socket_base_linux;
-#endif //_WIN32
+	friend class windows::socket_base_linux;
+#endif //_WINDOWS
 
 	boost::atomic_uint32_t thread_count;
 	

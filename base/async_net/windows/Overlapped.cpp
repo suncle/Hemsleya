@@ -9,12 +9,12 @@
 
 namespace Hemsleya {
 namespace async_net {
-namespace win32 {
+namespace windows {
 
 namespace detail {
 
 } //detail
 
-} //win32
+} //windows
 } //async_net
 } //Hemsleya

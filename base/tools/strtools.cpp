@@ -9,7 +9,7 @@
 namespace Hemsleya{
 namespace strtools{
 
-#ifdef _WIN32
+#ifdef _WINDOWS
 
 #include <Windows.h>
 
@@ -180,7 +180,7 @@ double str2float(std::string num_str){
 	return ret;
 }
 
-#endif //_WIN32
+#endif //_WINDOWS
 
 void spitle(char ch, std::string str, std::vector<std::string> & vectorStr, int spitlecount){
 	int oldpos = 0, pos = 0, count = 0;

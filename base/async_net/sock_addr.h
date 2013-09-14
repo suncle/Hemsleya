@@ -7,24 +7,24 @@
 #ifndef _address_h
 #define _address_h
 
-#ifdef _WIN32
-#include "win32/winhdef.h"
+#ifdef _WINDOWS
+#include "windows/winhdef.h"
 #endif
 
 #include <string>
 
 namespace Hemsleya {
 namespace async_net {
-namespace win32 {
-class socket_base_win32;
-} // win32
+namespace windows {
+class socket_base_WINDOWS;
+} // windows
 
 class sock_addr {
 private:
 	std::string str_addr;
 	unsigned short _port;
 
-#ifdef _WIN32
+#ifdef _WINDOWS
 	struct in_addr sin_addr;
 #elif __linux__
 	struct in_addr sin_addr;
@@ -42,7 +42,7 @@ public:
 	unsigned int int_address();
 	unsigned short port();
 
-	friend class win32::socket_base_win32;
+	friend class windows::socket_base_WINDOWS;
 	friend class async_service;
 
 };

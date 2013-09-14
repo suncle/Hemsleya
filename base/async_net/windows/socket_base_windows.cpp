@@ -4,7 +4,7 @@
  *	   Author: qianqians
  * socket �ӿ�
  */
-#ifdef _WIN32
+#ifdef _WINDOWS
 
 #include <Hemsleya/base/exception/exception.h>
 #include <Hemsleya/base/concurrent/container/msque.h>
@@ -18,12 +18,12 @@
 #include "../read_buff_pool.h"
 #include "../write_buff_pool.h"
 #include "../buff_pool.h"
-#include "socket_base_win32.h"
+#include "socket_base_WINDOWS.h"
 #include "Overlapped.h"
 
 namespace Hemsleya {
 namespace async_net {
-namespace win32 {
+namespace windows {
  
 container::msque<SOCKET> _sock_pool;
 
@@ -79,11 +79,11 @@ void Releasefd(SOCKET fd){
 	}
 }
 
-socket_base_win32::socket_base_win32(async_service & _impl) : 
+socket_base_WINDOWS::socket_base_WINDOWS(async_service & _impl) : 
 	socket_base(_impl),
 	isListen(false)
 {
-	fd = win32::Getfd();
+	fd = windows::Getfd();
 
 	if (fd == INVALID_SOCKET){
 		throw Hemsleya::exception::exception("INVALID_SOCKET");
@@ -95,11 +95,11 @@ socket_base_win32::socket_base_win32(async_service & _impl) :
 	}
 }
 
-socket_base_win32::~socket_base_win32(){
+socket_base_WINDOWS::~socket_base_WINDOWS(){
 	Releasefd(fd);
 }
 
-int socket_base_win32::bind(sock_addr addr){
+int socket_base_WINDOWS::bind(sock_addr addr){
 	sockaddr_in service;
 	memset(&service, 0, sizeof(sockaddr_in));
 	service.sin_family = AF_INET;
@@ -114,7 +114,7 @@ int socket_base_win32::bind(sock_addr addr){
 	return ret;
 }
 
-int socket_base_win32::opensocket(){
+int socket_base_WINDOWS::opensocket(){
 	isclosed = false;
 	isrecv = false;
 	isaccept = false;
@@ -123,7 +123,7 @@ int socket_base_win32::opensocket(){
 	return socket_succeed;
 }
 
-int socket_base_win32::do_disconnect(){
+int socket_base_WINDOWS::do_disconnect(){
 	OverlappedEX_close * ovl = detail::OverlappedEXPool<OverlappedEX_close>::get();
 	ovl->fd = fd;
 	ovl->overlapex.type = win32_tcp_close_complete;
@@ -155,7 +155,7 @@ int socket_base_win32::do_disconnect(){
 	return socket_succeed;
 }
 
-int socket_base_win32::closesocket(){
+int socket_base_WINDOWS::closesocket(){
 	if (isdisconnect){
 		onClose();
 	}else{
@@ -167,15 +167,15 @@ int socket_base_win32::closesocket(){
 	return socket_succeed;
 }
 
-void socket_base_win32::onClose(){
+void socket_base_WINDOWS::onClose(){
 	onAcceptHandle.clear();
 	onRecvHandle.clear();
 	onConnectHandle.clear();
 }
 
-int socket_base_win32::do_async_accpet(){
+int socket_base_WINDOWS::do_async_accpet(){
 	DWORD dwBytes;
-	socket_base_win32 * _client_socket = (socket_base_win32 *)async_net::detail::SocketPool::get(*_service);
+	socket_base_WINDOWS * _client_socket = (socket_base_WINDOWS *)async_net::detail::SocketPool::get(*_service);
 	OverlappedEX_Accept * olp = detail::OverlappedEXPool<OverlappedEX_Accept >::get();
 	olp->socket_ = _client_socket;
 	olp->overlapex.type = win32_tcp_accept_complete;
@@ -198,7 +198,7 @@ int socket_base_win32::do_async_accpet(){
 	return socket_succeed;
 }
 
-int socket_base_win32::async_accpet(int num, bool bflag){
+int socket_base_WINDOWS::async_accpet(int num, bool bflag){
 	int ret = socket_succeed;
 
 	if (bflag == true) {
@@ -234,7 +234,7 @@ int socket_base_win32::async_accpet(int num, bool bflag){
 	return ret;
 }
 
-int socket_base_win32::async_accpet(bool bflag){
+int socket_base_WINDOWS::async_accpet(bool bflag){
 	if (bflag == false){
 		if(isclosed){
 			return is_closed;
@@ -248,25 +248,25 @@ int socket_base_win32::async_accpet(bool bflag){
 	return socket_succeed;
 }
 
-void socket_base_win32::OnAccept(socket_base * sClient, DWORD llen, _error_code err) {
+void socket_base_WINDOWS::OnAccept(socket_base * sClient, DWORD llen, _error_code err) {
 	if ((_service->nConnect++ < _service->nMaxConnect) && isaccept){
 		do_async_accpet();
 	}
 	
 	if(isclosed){
 		err = is_closed;
-		Releasefd(((socket_base_win32*)sClient)->fd);
+		Releasefd(((socket_base_WINDOWS*)sClient)->fd);
 	}
 
 	if (err){
-		Releasefd(((socket_base_win32*)sClient)->fd);
+		Releasefd(((socket_base_WINDOWS*)sClient)->fd);
 	}else{
 		LPSOCKADDR local_addr = 0;
 		int local_addr_length = 0;
 		LPSOCKADDR remote_addr = 0;
 		int remote_addr_length = 0;
 		GetAcceptExSockaddrs(
-			((socket_base_win32*)sClient)->_read_buff->buff, 
+			((socket_base_WINDOWS*)sClient)->_read_buff->buff, 
 			llen, 
 			sizeof(sockaddr_in) + 16, 
 			sizeof(sockaddr_in) + 16, 
@@ -276,19 +276,19 @@ void socket_base_win32::OnAccept(socket_base * sClient, DWORD llen, _error_code 
 			&remote_addr_length);
 	
 		if (remote_addr_length > sizeof(sockaddr_in) + 16) {
-			Releasefd(((socket_base_win32*)sClient)->fd);
+			Releasefd(((socket_base_WINDOWS*)sClient)->fd);
 		}else{
 			if (llen > 0){
-				((socket_base_win32*)sClient)->_read_buff->slide += llen;
+				((socket_base_WINDOWS*)sClient)->_read_buff->slide += llen;
 			}
 
-			setsockopt(((socket_base_win32*)sClient)->fd, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, (char *)&fd, sizeof(fd));
-			if (CreateIoCompletionPort((HANDLE)((socket_base_win32*)sClient)->fd, _service->hIOCP, 0, 0) != _service->hIOCP){
+			setsockopt(((socket_base_WINDOWS*)sClient)->fd, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, (char *)&fd, sizeof(fd));
+			if (CreateIoCompletionPort((HANDLE)((socket_base_WINDOWS*)sClient)->fd, _service->hIOCP, 0, 0) != _service->hIOCP){
 				DWORD err = WSAGetLastError();
 			}
 
-			((socket_base_win32*)sClient)->_remote_addr = remote_addr;
-			((socket_base_win32*)sClient)->isdisconnect = false;
+			((socket_base_WINDOWS*)sClient)->_remote_addr = remote_addr;
+			((socket_base_WINDOWS*)sClient)->isdisconnect = false;
 		}
 	}
 
@@ -296,11 +296,11 @@ void socket_base_win32::OnAccept(socket_base * sClient, DWORD llen, _error_code 
 	socket_._ref = new boost::atomic_uint(1);
 	socket_._socket = sClient;
 	if (!onAcceptHandle.empty()){
-		onAcceptHandle(socket_, ((socket_base_win32*)sClient)->_remote_addr, err);
+		onAcceptHandle(socket_, ((socket_base_WINDOWS*)sClient)->_remote_addr, err);
 	}
 }
 
-int socket_base_win32::async_recv(bool bflag){
+int socket_base_WINDOWS::async_recv(bool bflag){
 	if (bflag == true){
 		if(isclosed){
 			return is_closed;
@@ -333,7 +333,7 @@ int socket_base_win32::async_recv(bool bflag){
 	return socket_succeed;
 }
 
-int socket_base_win32::do_async_recv(){
+int socket_base_WINDOWS::do_async_recv(){
 	DWORD flag = 0;
 	DWORD llen = 0;
 	
@@ -353,7 +353,7 @@ int socket_base_win32::do_async_recv(){
 	return socket_succeed;
 }	
 
-void socket_base_win32::OnRecv(DWORD llen, _error_code err) { 
+void socket_base_WINDOWS::OnRecv(DWORD llen, _error_code err) { 
 	if (!err){
 		while(1){	
 			std::size_t size = _read_buff->buff_size - _read_buff->slide;
@@ -407,7 +407,7 @@ void socket_base_win32::OnRecv(DWORD llen, _error_code err) {
 	}
 }	
 
-int socket_base_win32::async_send(char * buff, unsigned int lenbuff){
+int socket_base_WINDOWS::async_send(char * buff, unsigned int lenbuff){
 	if(isclosed){
 		return is_closed;
 	}else if(isdisconnect){
@@ -419,7 +419,7 @@ int socket_base_win32::async_send(char * buff, unsigned int lenbuff){
 	return do_async_send();
 }
 
-int socket_base_win32::do_async_send(){
+int socket_base_WINDOWS::do_async_send(){
 	if (_write_buff->send_buff()){
 		DWORD flag = 0;
 		DWORD llen = 0;
@@ -444,7 +444,7 @@ int socket_base_win32::do_async_send(){
 	return socket_succeed;
 }
 
-void socket_base_win32::OnSend(_error_code err){
+void socket_base_WINDOWS::OnSend(_error_code err){
 	if (!err){
 		_write_buff->clear();
 
@@ -462,7 +462,7 @@ void socket_base_win32::OnSend(_error_code err){
 	}
 }	
 
-int socket_base_win32::async_connect(const sock_addr &  addr){
+int socket_base_WINDOWS::async_connect(const sock_addr &  addr){
 	if(isclosed){
 		return is_closed;
 	}else if(!isdisconnect){
@@ -475,7 +475,7 @@ int socket_base_win32::async_connect(const sock_addr &  addr){
 	return do_async_connect();
 }
 
-int socket_base_win32::do_async_connect() {
+int socket_base_WINDOWS::do_async_connect() {
 	sockaddr_in service;
 	memset(&service, 0, sizeof(sockaddr_in));
 	service.sin_family = AF_INET;
@@ -511,7 +511,7 @@ int socket_base_win32::do_async_connect() {
 	return socket_succeed;
 }
 
-void socket_base_win32::OnConnect(_error_code err) {
+void socket_base_WINDOWS::OnConnect(_error_code err) {
 	tryconnectcount++;
 	if (err){
 		if (tryconnectcount < 3){
@@ -527,8 +527,8 @@ void socket_base_win32::OnConnect(_error_code err) {
 	}
 }
 
-} //win32
+} //windows
 } //async_net
 } //Hemsleya
 
-#endif //_WIN32
+#endif //_WINDOWS

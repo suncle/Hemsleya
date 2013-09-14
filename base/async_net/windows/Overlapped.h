@@ -8,7 +8,7 @@
 #ifndef _OVERLAPPED_H
 #define _OVERLAPPED_H
 
-#ifdef _WIN32
+#ifdef _WINDOWS
 
 #include "winhdef.h"
 #include "../error_code.h"
@@ -22,7 +22,7 @@ namespace async_net {
 
 class socket_base;
 
-namespace win32 {
+namespace windows {
 
 //À©Õ¹Overlapped½á¹¹
 struct OverlappedEX {
@@ -63,9 +63,9 @@ private:
 
 }// detail
 
-} //win32
+} //windows
 } //async_net
 } //Hemsleya
 
-#endif //_WIN32
+#endif //_WINDOWS
 #endif //_OVERLAPPED_H

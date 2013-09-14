@@ -7,9 +7,9 @@
 #include "socket.h"
 #include "socket_pool.h"
 
-#ifdef _WIN32
-#include "win32/socket_base_win32.h"
-#endif //_WIN32
+#ifdef _WINDOWS
+#include "windows/socket_base_WINDOWS.h"
+#endif //_WINDOWS
 
 namespace Hemsleya {
 namespace async_net {

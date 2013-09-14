@@ -8,8 +8,8 @@
 #ifndef _SOCK_BUFF_H
 #define _SOCK_BUFF_H
 
-#ifdef _WIN32
-#include "win32/winhdef.h"
+#ifdef _WINDOWS
+#include "windows/winhdef.h"
 #endif
 
 #include <Hemsleya/base/concurrent/container/msque.h>
@@ -29,7 +29,7 @@ namespace detail {
 
 class read_buff{
 public:	
-#ifdef _WIN32
+#ifdef _WINDOWS
 	WSABUF _wsabuf;
 #endif	
 
@@ -64,7 +64,7 @@ private:
 
 		boost::shared_mutex _mu;
 		
-#ifdef _WIN32
+#ifdef _WINDOWS
 		void put_buff();
 
 		WSABUF * _wsabuf;
@@ -72,7 +72,7 @@ private:
 		boost::atomic_uint32_t _wsabuf_slide;
 		boost::shared_mutex _wsabuf_mu;
 
-#endif	//_WIN32
+#endif	//_WINDOWS
 	};
 
 private:

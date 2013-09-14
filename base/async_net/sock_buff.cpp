@@ -17,7 +17,7 @@ read_buff::read_buff(){
 	buff_size = detail::page_size;
 	slide = 0;
 
-#ifdef _WIN32
+#ifdef _WINDOWS
 	_wsabuf.buf = 0;
 	_wsabuf.len = 0;
 #endif
@@ -43,15 +43,15 @@ write_buff::buffex::buffex() : slide(0) {
 	memset(buff, 0, page_size);	
 #endif //_DEBUG
 
-#ifdef _WIN32
+#ifdef _WINDOWS
 	_wsabuf = new WSABUF[8]; 
 	_wsabuf_count = 8; 
 	_wsabuf_slide.store(0);
-#endif	//_WIN32
+#endif	//_WINDOWS
 }
 	
 write_buff::buffex::~buffex() { 
-#ifdef _WIN32
+#ifdef _WINDOWS
 	for(unsigned int i = 0; i < _wsabuf_slide.load(); i++){
 		if(buff != _wsabuf[i].buf){
 			detail::BuffPool::release(_wsabuf[i].buf, _wsabuf[i].len);
@@ -59,7 +59,7 @@ write_buff::buffex::~buffex() {
 	}
 
 	delete[] _wsabuf; 
-#endif	//_WIN32
+#endif	//_WINDOWS
 
 	detail::BuffPool::release(buff, buff_size);
 }
@@ -70,7 +70,7 @@ void write_buff::buffex::clear() {
 #endif //_DEBUG
 	slide.store(0);
 
-#ifdef _WIN32
+#ifdef _WINDOWS
 	for(unsigned int i = 0; i < _wsabuf_slide.load(); i++){
 		if(buff != _wsabuf[i].buf){
 			detail::BuffPool::release(_wsabuf[i].buf, _wsabuf[i].len);
@@ -78,10 +78,10 @@ void write_buff::buffex::clear() {
 		_wsabuf[i].len = 0;
 	}
 	_wsabuf_slide.store(0);
-#endif	//_WIN32
+#endif	//_WINDOWS
 }
 
-#ifdef _WIN32
+#ifdef _WINDOWS
 void write_buff::buffex::put_buff() {
 	boost::upgrade_lock<boost::shared_mutex> lock(_wsabuf_mu);
 
@@ -103,7 +103,7 @@ void write_buff::buffex::put_buff() {
 	_wsabuf[nSlide].buf = buff;
 	_wsabuf[nSlide].len = slide.load();
 }
-#endif //_WIN32
+#endif //_WINDOWS
 
 //write buff
 write_buff::write_buff(){
@@ -123,7 +123,7 @@ void write_buff::init(){
 	_send_flag.clear();
 }
 
-#ifdef _WIN32
+#ifdef _WINDOWS
 void write_buff::write(char * data, std::size_t llen){
 	buffex * _write_buff = 0;
 	while(1){
@@ -181,7 +181,7 @@ void write_buff::write(char * data, std::size_t llen){
 
 	_write_buff->_mu.unlock_upgrade();
 }
-#endif //_WIN32
+#endif //_WINDOWS
 
 #ifdef __linux__
 void write_buff::write(char * data, std::size_t llen){
@@ -214,14 +214,14 @@ bool write_buff::send_buff(){
 	buffex * _buff = write_buff_.load();
 	boost::unique_lock<boost::shared_mutex> lock(_buff->_mu, boost::try_to_lock);
 	while (!lock.owns_lock()){
-#ifdef _WIN32
+#ifdef _WINDOWS
 		if(_buff->_wsabuf_slide > 8){
 			if(_buff == write_buff_.load()){
 				lock.lock();
 				break;
 			}
 		}
-#endif //_WIN32
+#endif //_WINDOWS
 		return false;
 	}
 
@@ -234,11 +234,11 @@ bool write_buff::send_buff(){
 		return false;
 	}
 
-#ifdef _WIN32
+#ifdef _WINDOWS
 	if (_buff->_wsabuf_slide.load() <= 0 && _buff->slide.load() <= 0){
 #elif __linux__
 	if (_buff->slide.load() <= 0){
-#endif //_WIN32
+#endif //_WINDOWS
 		_send_flag.clear();
 		return false;
 	}

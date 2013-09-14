@@ -12,9 +12,9 @@
 
 namespace Hemsleya {
 namespace async_net {
-namespace win32 {
-class socket_base_win32;
-} // win32
+namespace windows {
+class socket_base_WINDOWS;
+} // windows
 
 class socket{
 public:
@@ -66,7 +66,7 @@ private:
 	boost::atomic_uint * _ref;
 
 	friend class async_service;
-	friend class win32::socket_base_win32;
+	friend class windows::socket_base_WINDOWS;
 
 };
 

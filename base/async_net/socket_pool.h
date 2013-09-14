@@ -7,9 +7,9 @@
 #ifndef _SOCKE_POOLT_H
 #define _SOCKE_POOLT_H
 
-#ifdef _WIN32
-#include "win32/socket_base_win32.h"
-#endif //_WIN32
+#ifdef _WINDOWS
+#include "windows/socket_base_WINDOWS.h"
+#endif //_WINDOWS
 
 #include <Hemsleya/base/concurrent/abstract_factory/abstract_factory.h>
 #include <Hemsleya/base/concurrent/container/msque.h>
@@ -44,7 +44,7 @@ public:
 
 private:	
 #ifdef _WINDOWS
-	static Hemsleya::abstract_factory::abstract_factory<win32::socket_base_win32 > _socket_factory;
+	static Hemsleya::abstract_factory::abstract_factory<windows::socket_base_WINDOWS > _socket_factory;
 #endif
 	static Hemsleya::container::msque<socket_base * > _socket_pool;
 
