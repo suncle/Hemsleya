@@ -5,20 +5,19 @@
  * timer
  */
 #include "timer.h"
+#include "clock.h"
 
 namespace Hemsleya{
 namespace timer{
 
 timer::timer(){
-	time(&datumtime);
-	datumtime *= 1000;
 }
 	
 timer::~timer(){
 }
 
-time_t timer::nowtime(){
-	return datumtime + clock();
+uint64_t timer::nowtime(){
+	return Hemsleya::timer::clock();
 }
 
 void timer::add_timer(std::string & key, time_t time, timerHandle handle){

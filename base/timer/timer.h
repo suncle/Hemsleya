@@ -35,10 +35,9 @@ public:
 	void do_timer();
 
 private:
-	time_t nowtime();
+	uint64_t nowtime();
 
 private:
-	time_t datumtime;
 	boost::thread_specific_ptr<indexmap > tss_index;
 	boost::thread_specific_ptr<timermap > tss_timer_map;
 
