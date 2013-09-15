@@ -35,7 +35,7 @@ void context::operator()(){
 	SwitchToFiber(_contex);
 }
 
-void context::yield(context & _context){
+void yield(context & _context){
 	SwitchToFiber(_context._contex);
 }
 

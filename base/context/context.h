@@ -29,15 +29,17 @@ public:
 	~context();
 
 	void operator()();
-	void yield(context & _context);
 	
 private:
 	detail::_context _contex;
 	boost::function<void()> fn_handle;
 
 	friend void WINAPI detail::PFIBER_START_ROUTINE(LPVOID lpFiberParameter);
+	friend void yield(context & _context);
 
 };
+
+void yield(context & _context);
 
 }// context
 }// Hemsleya
