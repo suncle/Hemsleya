@@ -18,30 +18,24 @@
 namespace Hemsleya {
 namespace active {
 
+struct task;
 class active;
-class mirco_active;
+class mirco_active_service;
 
-class active_server {
+class active_service {
 public:
-	active_server();
-	~active_server();
+	active_service();
+	~active_service();
 
-	void do_wait();
-
+	task * next_task();
+	
 	void run();
 
-private:
-	void post_mirco_active(mirco_active *);
+	bool isRun();
 
 private:
-	friend class mirco_active;
-	friend class active;
-
-	boost::thread_specific_ptr<mirco_active> next_active;
-
-	boost::shared_mutex _swap_mu;
-	Hemsleya::container::msque<mirco_active*> *_current_pool, *_backstage_pool;
-	Hemsleya::container::msque<mirco_active*> _active_pool[2];
+	boost::atomic_int32_t _active_flag;
+	container::msque<task * > in_order_que;
 
 };
 
