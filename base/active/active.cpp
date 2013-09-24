@@ -14,6 +14,7 @@ namespace active {
 
 active::active(active_service & _active_service_, boost::function<void(void) > fn){
 	task.fn = fn;
+	_active_service_.push_task(&task);
 }
 
 active::~active(){

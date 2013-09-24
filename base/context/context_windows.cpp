@@ -15,7 +15,7 @@ namespace context{
 
 namespace detail{
 
-void WINAPI PFIBER_START_ROUTINE(LPVOID lpFiberParameter){
+void WINAPI _PFIBER_START_ROUTINE(LPVOID lpFiberParameter){
 	if(lpFiberParameter){
 		((context*)lpFiberParameter)->fn_handle();
 	}
@@ -24,7 +24,7 @@ void WINAPI PFIBER_START_ROUTINE(LPVOID lpFiberParameter){
 }//detail
 
 context::context(boost::function<void()> _fn_handle){
-	_contex = CreateFiber(65536, detail::PFIBER_START_ROUTINE, this);
+	_contex = CreateFiber(65536, detail::_PFIBER_START_ROUTINE, this);
 }
 
 context::~context(){

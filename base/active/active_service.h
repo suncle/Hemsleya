@@ -27,6 +27,8 @@ public:
 	active_service();
 	~active_service();
 
+	void push_task(task * _task);
+
 	task * next_task();
 	
 	void run();

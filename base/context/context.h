@@ -18,7 +18,7 @@ namespace detail {
 #ifdef _WINDOWS
 #include <Windows.h>
 typedef LPVOID _context;
-void WINAPI PFIBER_START_ROUTINE(LPVOID lpFiberParameter);
+void WINAPI _PFIBER_START_ROUTINE(LPVOID lpFiberParameter);
 #endif // _WINDOWS
 
 }//detail
@@ -34,7 +34,7 @@ private:
 	detail::_context _contex;
 	boost::function<void()> fn_handle;
 
-	friend void WINAPI detail::PFIBER_START_ROUTINE(LPVOID lpFiberParameter);
+	friend void WINAPI detail::_PFIBER_START_ROUTINE(LPVOID lpFiberParameter);
 	friend void yield(context & _context);
 
 };

@@ -41,6 +41,10 @@ void scheduling::work(){
 				boost::this_thread::yield();
 			}
 		}
+
+		if(!_fn_scheduling.empty()){
+			_fn_scheduling();
+		}
 	}
 }
 

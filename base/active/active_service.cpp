@@ -6,7 +6,7 @@
  */
 
 #include "active_service.h"
-#include "mirco_active_service.h"
+#include "scheduling.h"
 
 namespace Hemsleya {
 namespace active {
@@ -17,6 +17,10 @@ active_service::active_service() : _active_flag(0) {
 active_service::~active_service() {
 }
 
+void active_service::push_task(task * _task){
+	in_order_que.push(_task);
+}
+
 task * active_service::next_task() {
 	task * _task = 0;
 	in_order_que.pop(_task);
@@ -24,8 +28,8 @@ task * active_service::next_task() {
 }
 	
 void active_service::run(){
-	mirco_active_service _mirco_active_service(this);
-	_mirco_active_service.run();
+	scheduling scheduling(this, 0);
+	scheduling.run();
 }
 
 bool active_service::isRun(){
