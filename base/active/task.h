@@ -8,30 +8,27 @@
 #ifndef TASK_H_
 #define TASK_H_
 
-#include <map>
-#include <list>
-
-#include <boost/atomic.hpp>
 #include <boost/function.hpp>
-#include <boost/thread/shared_mutex.hpp>
 
-#include <Hemsleya/base/concurrent/abstract_factory/abstract_factory.h>
-#include <Hemsleya/base/context/context.h>
+#include "time_wait_context.h"
 
 namespace Hemsleya {
 namespace active {
 
 enum task_state{
-	in_order,
-	done,
+	wait_task,
+	time_wait_task,
+	running_task,
+	done_task,
 };
 
 struct task{
 	task();
 	~task();
 
-	uint32_t state;
-	uint64_t wait_time;
+	time_wait_context _wait_context;
+
+	task_state _state; 
 	boost::function<void() > fn;
 };
 

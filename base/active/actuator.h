@@ -9,20 +9,28 @@
 
 #include <boost/function.hpp>
 
-#include "task.h"
+#include <Hemsleya/base/context/context.h>
 
 namespace Hemsleya {
 namespace active {
 
-class active {
-public:
-	active(boost::function<void(void) > fn);
-	~active();
+struct task;
 
-	void join();
+class actuator {
+public:
+	actuator();
+	~actuator();
+
+	context::context * context();
+	task * current_task();
 
 private:
-	task task;
+	void work();
+
+	context::context _context;
+	task * _task;
+
+	friend actuator * context2actuator(context::context * _context);
 
 };
 

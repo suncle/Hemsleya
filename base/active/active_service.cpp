@@ -1,39 +1,33 @@
 /*
- * active_server.cpp
+ * active_service.cpp
  *
- *  Created on: 2012-4-8
+ *  Created on: 2013-3-28
  *      Author: qianqians
  */
-
 #include "active_service.h"
 #include "scheduling.h"
+#include "exit.h"
 
 namespace Hemsleya {
 namespace active {
 
-active_service::active_service() : _active_flag(0) {
+active_service::active_service(boost::function<context::context*(void)> _fn_scheduling_){
+	_fn_scheduling = _fn_scheduling_;
 }
 
-active_service::~active_service() {
+active_service::~active_service(){
 }
 
-void active_service::push_task(task * _task){
-	in_order_que.push(_task);
-}
-
-task * active_service::next_task() {
-	task * _task = 0;
-	in_order_que.pop(_task);
-	return _task;
-}
-	
 void active_service::run(){
-	scheduling scheduling(this, 0);
-	scheduling.run();
+	if (!is_run.load()){
+		is_run.store(true);
+	}
+	scheduling _scheduling(_fn_scheduling);
+	_scheduling.run();
 }
 
-bool active_service::isRun(){
-	return _active_flag.load() != 0;
+void active_service::exit(){
+	is_run.store(false);
 }
 
 } /* namespace active */

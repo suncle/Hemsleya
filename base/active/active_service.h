@@ -1,46 +1,34 @@
 /*
- * active_server.h
+ * active_service.h
  *
- *  Created on: 2012-4-8
+ *  Created on: 2013-9-28
  *      Author: qianqians
  */
 
-#ifndef ACTIVE_SERVER_H_
-#define ACTIVE_SERVER_H_
+#ifndef ACTIVE_SERVICE_H_
+#define ACTIVE_SERVICE_H_
 
-#include <vector>
+#include <boost/function.hpp>
 
-#include <boost/thread.hpp>
-#include <boost/atomic.hpp>
-
-#include <Hemsleya/base/concurrent/container/msque.h>
+#include <Hemsleya/base/context/context.h>
 
 namespace Hemsleya {
 namespace active {
 
-struct task;
-class active;
-class mirco_active_service;
-
 class active_service {
 public:
-	active_service();
+	active_service(boost::function<context::context*(void)> _fn_scheduling_);
 	~active_service();
 
-	void push_task(task * _task);
-
-	task * next_task();
-	
 	void run();
 
-	bool isRun();
+	void exit();
 
 private:
-	boost::atomic_int32_t _active_flag;
-	container::msque<task * > in_order_que;
+	boost::function<context::context*(void)> _fn_scheduling;
 
 };
 
 } /* namespace active */
 } /* namespace Hemsleya */
-#endif /* ACTIVESERVER_H_ */
+#endif /* ACTIVE_SERVICE_H_ */

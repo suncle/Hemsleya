@@ -6,22 +6,24 @@
  */
 
 #include "active.h"
-#include "active_service.h"
+#include "pending_task.h"
 #include "task.h"
+
+#include <boost/thread.hpp>
 
 namespace Hemsleya {
 namespace active {
 
-active::active(active_service & _active_service_, boost::function<void(void) > fn){
+active::active(boost::function<void(void) > fn){
 	task.fn = fn;
-	_active_service_.push_task(&task);
+	push_task(&task);
 }
 
 active::~active(){
 }
 
 void active::join(){
-	while(task.state != done){
+	while(task._state != done_task){
 		boost::this_thread::yield();
 	}
 }
