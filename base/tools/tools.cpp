@@ -26,9 +26,16 @@ void _trace(char * format, ...){
 
 #ifdef _WINDOWS
 #include <Windows.h>
+
+uint32_t count = 0;
+
 uint32_t processors_count(){
-	SYSTEM_INFO info;
-	GetSystemInfo(&info);
-	return info.dwNumberOfProcessors;
+	if (count == 0){
+		SYSTEM_INFO info;
+		GetSystemInfo(&info);
+		count = info.dwNumberOfProcessors;
+	}
+
+	return count;
 }
-#endif
+#endif //_WINDOWS
