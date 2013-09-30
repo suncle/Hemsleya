@@ -3,6 +3,8 @@
 
 an open-source C++ library developed by qianqians
 
+并行算法:parallel_sort
+
 使用context 重构 active
 
 添加协程库context 
