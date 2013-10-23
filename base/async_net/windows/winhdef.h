@@ -8,23 +8,14 @@
 #define _WINHDEF_H
 
 #ifdef _WINDOWS
-
 #include <WinSock2.h>
-#include <Mswsock.h>
-#include <MSTcpIP.h>
+#include <ws2ipdef.h>
+#include <Mstcpip.h>
+#include <mswsock.h>
+#include <Windows.h>
 
-#pragma comment(lib, "Ws2_32.lib")
-#pragma comment(lib, "Mswsock.lib")
-
-enum win32_event_type{
-	win32_tcp_send_complete = 1,
-	win32_tcp_recv_complete = 2,
-	win32_tcp_connect_complete = 3,
-	win32_tcp_accept_complete = 4,
-	win32_tcp_disconnect_complete = 5,
-	win32_tcp_close_complete = 6,
-	win32_stop_,
-};
+#pragma comment(lib, "ws2_32.lib")
 
 #endif //_WINDOWS
+
 #endif //_WINHDEF_H

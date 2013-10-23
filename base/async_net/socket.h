@@ -1,76 +1,95 @@
 /*
  * socket.h
- * Created on: 2013-2-24
- *	   Author: qianqians
- * socket �ӿ�
+ *   Created on: 2013-10-2
+ *       Author: qianqians
+ * socket
  */
 #ifndef _SOCKET_H
 #define _SOCKET_H
 
-#include "socket_base.h"
-#include <boost/atomic.hpp>
+#include "enumdef.h"
+#include "callbackdef.h"
 
-namespace Hemsleya {
-namespace async_net {
-namespace windows {
-class socket_base_WINDOWS;
-} // windows
+#include <boost/function.hpp>
+#include <boost/shared_ptr.hpp>
+
+namespace Hemsleya { 
+namespace async_net { 
+
+class async_service;
+class address;
+
+namespace TCP{
+
+class socket_impl;
 
 class socket{
 public:
-	socket();
-
-	socket(async_service & _impl);
-	socket(const socket & _s);
-
+	socket(async_service & _service);
 	~socket();
 
-	void operator =(const socket & _s);
+public:
+	void bind(const address & addr);
 
-	bool operator ==(const socket & _s);
+	void async_send(char * buf, uint32_t len);
 
-	bool operator !=(const socket & _s);
+	void async_recv(recv_state _state);
+
+	void async_connect(const address & addr);
+	
+	void shutdown();
+
+	void cancelio();
 
 public:
-	void register_accpet_handle(AcceptHandle onAccpet);
-
-	void register_recv_handle(RecvHandle onRecv);
+	void registersendcallback(sendcallback _fnsendcallback);
 	
-	void register_connect_handle(ConnectHandle onConnect);
-	
-	void register_send_handle(SendHandle onSend);
+	void registerrecvcallback(recvcallback _fnrecvcallback);
 
-public:
-	int bind(sock_addr addr);
-
-public:
-	int opensocket(async_service & _impl);
-	
-	int closesocket();
-
-public:
-	int async_accpet(int num, bool bflag);
-
-	int async_accpet(bool bflag);
-
-	int async_recv(bool bflag);
-	
-	int async_connect(sock_addr addr);
-
-	int async_send(char * buff, unsigned int lenbuff);
-
-	sock_addr get_remote_addr();
+	void registerconnectcallback(connectcallback _fnconnectcallback);
 
 private:
-	socket_base * _socket;
-	boost::atomic_uint * _ref;
+	boost::shared_ptr<socket_impl> sptr;
 
-	friend class async_service;
-	friend class windows::socket_base_WINDOWS;
+	friend class endpoint;
+
+};  
+
+} //TCP
+
+namespace UDP{
+
+class socket_impl;
+
+class socket{
+public:
+	socket(async_service & _service);
+	~socket();
+
+	void bind(const address & addr);
+
+	void async_sendto(char * buf, uint32_t len);
+
+	void async_recvfrom(recv_state _state);
+
+	void shutdown();
+
+	void cancelio();
+
+public:
+	void registersendtocallback(sendtocallback _fnsendcallback);
+
+	void registerrecvfromcallback(recvfromcallback _fnrecvcallback);
+
+private:
+	boost::shared_ptr<socket_impl> sptr;
 
 };
+
+} //UDP
 
 } //async_net
 } //Hemsleya
 
-#endif
+
+#endif //_SOCKET_H

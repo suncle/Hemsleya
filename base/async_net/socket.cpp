@@ -1,118 +1,85 @@
 /*
  * socket.cpp
- * Created on: 2012-3-24
- *	   Author: qianqians
- * socket �ӿ�
+ *   Created on: 2013-10-11
+ *       Author: qianqians
+ * async_service
  */
 #include "socket.h"
-#include "socket_pool.h"
 
-#ifdef _WINDOWS
-#include "windows/socket_base_WINDOWS.h"
-#endif //_WINDOWS
+#include "async_service.h"
+#include "socket_tcp_impl.h"
+#include "socket_udp_impl.h"
 
-namespace Hemsleya {
-namespace async_net {
+namespace Hemsleya { 
+namespace async_net { 
+	
+namespace TCP{
 
-socket::socket(){
-	_ref = 0;
-	_socket = 0;
-}
-
-socket::socket(async_service & _impl){
-	_socket = async_net::detail::SocketPool::get(_impl);
-	_ref = new boost::atomic_uint(1);
-}
-
-socket::socket(const socket & _s){
-	_s._ref->operator++();
-	_socket = _s._socket;
-	_ref = _s._ref;
+socket::socket(async_service & _service) : sptr(create_socket_tcp_impl(_service), delete_socket_tcp_impl){
 }
 
 socket::~socket(){
-	_ref->operator--();
-	if (*_ref == 0){
-		async_net::detail::SocketPool::release(_socket);
-	}
 }
 
-void socket::operator =(const socket & _s){
-	_s._ref->operator++();
-	_socket = _s._socket;
-	if (_ref != 0){
-		_ref->operator--();
-	}
-	_ref = _s._ref;
+void socket::bind(const address & addr){
+	sptr->bind(addr);
 }
 
-bool socket::operator ==(const socket & _s){
-	return (_socket == _s._socket);
+void socket::async_send(char * buf, uint32_t len){
+	sptr->async_send(buf, len);
 }
 
-bool socket::operator !=(const socket & _s){
-	return (_socket != _s._socket);
+void socket::async_recv(recv_state _state){
+	sptr->async_recv(_state);
 }
 
-int socket::bind(sock_addr addr){
-	return _socket->bind(addr);
-}
-
-int socket::opensocket(async_service & _impl){
-	if (_socket == 0 && _ref == 0){
-		_socket = async_net::detail::SocketPool::get(_impl);
-		_ref = new boost::atomic_uint(1);
-	}else{
-		return _socket->opensocket();
-	}
-
-	return socket_succeed;
-}
-
-int socket::closesocket(){
-	return _socket->closesocket();
-}
-
-int socket::async_accpet(int num, bool bflag){
-	return _socket->async_accpet(num, bflag);
-}
-
-int socket::async_accpet(bool bflag){
-	return _socket->async_accpet(bflag);
-}
-
-int socket::async_recv(bool bflag){
-	return _socket->async_recv(bflag);
+void socket::async_connect(const address & addr){
+	sptr->async_connect(addr);
 }
 	
-int socket::async_connect(sock_addr addr){
-	return _socket->async_connect(addr);
+void socket::shutdown(){
+	sptr->shutdown();
 }
 
-int socket::async_send(char * buff, unsigned int lenbuff){
-	return _socket->async_send(buff, lenbuff);
+void socket::cancelio(){
+	sptr->cancelio();
 }
 
-sock_addr socket::get_remote_addr(){
-	return _socket->get_remote_addr();
-}
-
-void socket::register_accpet_handle(AcceptHandle onAccpet){
-	_socket->register_accpet_handle(onAccpet);
-}
-
-void socket::register_recv_handle(RecvHandle onRecv){
-	_socket->register_recv_handle(onRecv);
+void socket::registersendcallback(sendcallback _fnsendcallback){
+	sptr->registersendcallback(_fnsendcallback);
 }
 	
-void socket::register_connect_handle(ConnectHandle onConnect){
-	_socket->register_connect_handle(onConnect);
-}
-	
-void socket::register_send_handle(SendHandle onSend){
-	_socket->register_send_handle(onSend);
+void socket::registerrecvcallback(recvcallback _fnrecvcallback){
+	sptr->registerrecvcallback(_fnrecvcallback);
 }
 
+void socket::registerconnectcallback(connectcallback _fnconnectcallback){
+	sptr->registerconnectcallback(_fnconnectcallback);
+}
+
+} // TCP
+
+namespace UDP{
+
+socket::socket(async_service & _service) : sptr(create_socket_udp_impl(_service), delete_socket_udp_impl){
+}
+
+socket::~socket(){
+}
+
+void socket::bind(const address & addr){
+	sptr->bind(addr);
+}
+
+void socket::shutdown(){
+	sptr->shutdown();
+}
+
+void socket::cancelio(){
+	sptr->cancelio();
+}
+
+} //UDP
 
 } //async_net
 } //Hemsleya

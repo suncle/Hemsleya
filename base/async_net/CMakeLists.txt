@@ -2,38 +2,58 @@ PROJECT(async_net)
 
 
 AUX_SOURCE_DIRECTORY(. DIR_SRC)
-
-
 AUX_SOURCE_DIRECTORY(windows DIR_SRC_WINDOWS)
-
+AUX_SOURCE_DIRECTORY(exception DIR_SRC_exception)
 
 SET(header_files
     async_net.h
     async_service.h
-    error_code.h
-    sock_addr.h
-    sock_buff.h
+    address.h
+    endpoint.h
     socket.h
-    socket_pool.h
-    buff_pool.h
-    write_buff_pool.h
-
+    socket_base_impl.h
+    socket_tcp_impl.h
+    socket_udp_impl.h
+    writebuff.h
+    readbuff.h
+    buffstruct.h
+    enumdef.h
+    callbackdef.h
 )
 
+SET(header_files_exception
+    exception/AcceptException.h
+    exception/AddresException.h
+    exception/bindException.h
+    exception/ConnectException.h
+    exception/SendException.h
+    exception/RecvException.h
+    exception/SendtoException.h
+    exception/RecvfromException.h
+    exception/DisConnectException.h
+)
 
 SET(windows_header_files
-    windows/Overlapped.h
     windows/winhdef.h
-    windows/socket_base_WINDOWS.h
+    windows/overlapped.h
+    windows/overlappedaccept.h
+    windows/overlappedsend.h
+    windows/overlappedrecv.h
+    windows/overlappedrecvfrom.h
+    windows/overlappedconnect.h
+    windows/overlappeddisconnect.h 
+    windows/work_impl.h	
+    windows/socket_function.h
+    windows/wsabuff.h
 )
 
 
 SET(SRC_LIST
     ${DIR_SRC}
-    
     ${DIR_SRC_WINDOWS}
-
+    ${DIR_SRC_exception}
 )
 
-
-ADD_LIBRARY(async_net ${SRC_LIST} ${header_files} ${windows_header_files})
+ADD_LIBRARY(async_net ${SRC_LIST} ${header_files} ${windows_header_files} ${header_files_exception} )
+target_link_libraries(async_net abstract_factory)
+target_link_libraries(async_net exception)

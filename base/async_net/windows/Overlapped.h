@@ -1,9 +1,8 @@
 /*
- * Overlapped.h
- *  Created on: 2012-10-16
- *		Author: qianqians
- * 扩展Overlapped结构
- * 定义Overlapped对象池
+ * overlapped.h
+ *   Created on: 2012-10-16
+ *       Author: qianqians
+ * overlapped
  */
 #ifndef _OVERLAPPED_H
 #define _OVERLAPPED_H
@@ -11,61 +10,33 @@
 #ifdef _WINDOWS
 
 #include "winhdef.h"
-#include "../error_code.h"
 
-#include <Hemsleya/base/concurrent/abstract_factory/abstract_factory.h>
+#include "../socket_tcp_impl.h"
 
-#include <boost/function.hpp>
+namespace Hemsleya { 
+namespace async_net { 
 
-namespace Hemsleya {
-namespace async_net {
-
-class socket_base;
-
-namespace windows {
-
-//扩展Overlapped结构
-struct OverlappedEX {
-	int type;
-	OVERLAPPED overlap;
+enum eventtype{
+	event_accept,
+	event_connect,
+	event_disconnect,
+	event_send,
+	event_recv,
+	event_sendto,
+	event_recvfrom,
 };
 
-struct OverlappedEX_Accept{
-	OverlappedEX overlapex;
-	socket_base * socket_;
+struct overlapped {
+	eventtype type;
+	OVERLAPPED ovlap;
 };
 
-struct OverlappedEX_close{
-	OverlappedEX overlapex;
-	SOCKET fd;
-};
+overlapped * GetOverlapped(eventtype _eventtype);
+void ReleaseOverlapped(overlapped * poverlapped);
 
-namespace detail {
-
-template<typename OverlappedEX_Type>
-class OverlappedEXPool{
-public:
-	static void Init(){
-	}
-
-	static OverlappedEX_Type * get(){
-		return _OverlappedEX_pool.create_product();
-	}
-
-	static void release(OverlappedEX_Type * _OverlappedEX){
-		_OverlappedEX_pool.release_product(_OverlappedEX, 1);
-	}
-
-private:
-	static Hemsleya::abstract_factory::abstract_factory<typename OverlappedEX_Type > _OverlappedEX_pool;
-
-};
-
-}// detail
-
-} //windows
 } //async_net
 } //Hemsleya
 
 #endif //_WINDOWS
+
 #endif //_OVERLAPPED_H
