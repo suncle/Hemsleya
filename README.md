@@ -3,6 +3,8 @@
 
 an open-source C++ library developed by qianqians
 
+fsm 状态机
+
 async_net 第2版 windows only
 
 并行算法:parallel_sort
