@@ -1,49 +1,61 @@
 /*
  * fsm.cpp
  *
- *  Created on: 2013-10-4
+ *  Created on: 2013-10-26
  *      Author: qianqians
  * Hemsleya fsm
  */
 #include "fsm.h"
 
 namespace Hemsleya{
-namespace exception{
+namespace fsm{
 
-exception::exception(const char * info){
-	std::stringstream strstream;
-	strstream << info << " file:" << __FILE__ << " line:" << __LINE__;
-	err = strstream.str();
+fsm::fsm(){
 }
 
-exception::exception(const std::string & info){
-	std::stringstream strstream;
-	strstream << info << " file:" << __FILE__ << " line:" << __LINE__;
-	err = strstream.str();
+fsm::~fsm(){
 }
 
-exception::exception(const char * info, int errcode){
-	std::stringstream strstream;
-	strstream << info << errcode << " file:" << __FILE__ << " line:" << __LINE__;
-	err = strstream.str();
+bool fsm::setstate(int state){
+	bool bblocked = false;
+	
+	for (auto var : mapstatebeblocked[state]){
+		if (std::find(vectorstate.begin(), vectorstate.end(), var) != vectorstate.end()){
+			bblocked = true;
+			break;
+		}
+	}
+
+	if (bblocked){
+		return false;
+	}
+
+	for (auto var : mapstatebreak[state]){
+		std::vector<int>::iterator find = std::find(vectorstate.begin(), vectorstate.end(), var);
+		if (find != vectorstate.end()){
+			vectorstate.erase(find);
+		}
+	}
+
+	return true;
 }
 
-exception::exception(const std::string & info, int errcode){
-	std::stringstream strstream;
-	strstream << info << errcode << " file:" << __FILE__ << " line:" << __LINE__;
-	err = strstream.str();
+bool fsm::checkstate(int state){
+	std::vector<int>::iterator find = std::find(vectorstate.begin(), vectorstate.end(), state);
+	if (find == vectorstate.end()){
+		return false;
+	}
+	return true;
 }
 
-exception::~exception(){
+void fsm::addstatebreak(int state, int target){
+	mapstatebreak[state].push_back(target);
 }
 
-const char * exception::what( ) const{
-	return err.c_str();
+void fsm::addstateblock(int state, int target){
+	mapstatebeblocked[target].push_back(state);
 }
 
-exception::exception(){
-}
-
-}// exception
+}// fsm
 }// Hemsleya
 
