@@ -52,6 +52,7 @@ private:
 	boost::shared_ptr<socket_impl> sptr;
 
 	friend class endpoint;
+	friend class async_service;
 
 };  
 
@@ -68,7 +69,7 @@ public:
 
 	void bind(const address & addr);
 
-	void async_sendto(char * buf, uint32_t len);
+	void async_sendto(const sockaddr * addr, char * buf, uint32_t len);
 
 	void async_recvfrom(recv_state _state);
 
@@ -83,6 +84,8 @@ public:
 
 private:
 	boost::shared_ptr<socket_impl> sptr;
+	
+	friend class async_service;
 
 };
 

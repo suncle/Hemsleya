@@ -49,6 +49,8 @@ private:
 	async_service * _pservice;
 	SOCKET s;
 
+	friend class async_service;
+
 };  
 
 } // TCP

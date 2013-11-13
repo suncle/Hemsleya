@@ -5,6 +5,9 @@
  * async_service
  */
 #include "async_service.h"
+#include "socket_tcp_impl.h"
+#include "socket_udp_impl.h"
+#include "socket_base_impl.h"
 
 namespace Hemsleya { 
 namespace async_net { 
@@ -19,8 +22,16 @@ void async_service::run(){
 	_impl.run();
 }
 
-void async_service::addsocket(SOCKET s){
-	_impl.addsocket(s);
+void async_service::addendpoint(TCP::endpoint e){
+	_impl.addsocket(e.s);
+}
+
+void async_service::addsocket(TCP::socket s){
+	_impl.addsocket(s.sptr->s);
+}
+
+void async_service::addsocket(UDP::socket s){
+	_impl.addsocket(s.sptr->s);
 }
 
 } //async_net
