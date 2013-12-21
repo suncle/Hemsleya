@@ -31,27 +31,15 @@ socket_impl::socket_impl(async_net::async_service & _service) : async_net::socke
 }
 
 void socket_impl::async_sendto(const sockaddr * addr, char * inbuf, uint32_t len){
-	outbuff.write(inbuf, len, boost::bind(UDP::async_sendto, s, addr, _1, fnsendcallback));
+	outbuff.write(inbuf, len, boost::bind(UDP::async_sendto, s, addr, _1, boost::bind(socket_impl::sendtocallback, this)));
 }
 
 void socket_impl::async_recvfrom(recv_state _state){
 	if (_revc_state != _recv && _state == _recv){
 		_revc_state = _state;
 
-		UDP::async_recvfrom(s, inbuff.buff, inbuff.max, fnrecvcallback);
+		UDP::async_recvfrom(s, inbuff.buff, inbuff.max, boost::bind(socket_impl::recvfromcallback, this));
 	}
-}
-
-void socket_impl::registersendtocallback(sendtocallback _fnsendcallback){
-	while(_sendcallbackmutex.test_and_set());
-	fnsendcallback = _fnsendcallback;
-	_sendcallbackmutex.clear();
-}
-
-void socket_impl::registerrecvfromcallback(recvfromcallback _fnrecvcallback){
-	while(_recvcallbackmutex.test_and_set());
-	fnrecvcallback = _fnrecvcallback;
-	_sendcallbackmutex.clear();
 }
 
 Hemsleya::abstract_factory::abstract_factory<socket_impl> _abstract_factory_socket_impl;

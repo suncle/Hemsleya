@@ -15,7 +15,13 @@ namespace async_net {
 	
 namespace TCP{
 
-socket::socket(async_service & _service) : sptr(create_socket_tcp_impl(_service), delete_socket_tcp_impl){
+socket::socket(async_service & _service) : 
+	sptr(create_socket_tcp_impl(_service), 
+	delete_socket_tcp_impl),
+	_sendsignal(&sptr->_sendsignal),
+	_recvsignal(&sptr->_recvsignal),
+	_connectsignal(&sptr->_connectsignal)
+{
 }
 
 socket::~socket(){
@@ -45,23 +51,16 @@ void socket::cancelio(){
 	sptr->cancelio();
 }
 
-void socket::registersendcallback(sendcallback _fnsendcallback){
-	sptr->registersendcallback(_fnsendcallback);
-}
-	
-void socket::registerrecvcallback(recvcallback _fnrecvcallback){
-	sptr->registerrecvcallback(_fnrecvcallback);
-}
-
-void socket::registerconnectcallback(connectcallback _fnconnectcallback){
-	sptr->registerconnectcallback(_fnconnectcallback);
-}
-
 } // TCP
 
 namespace UDP{
 
-socket::socket(async_service & _service) : sptr(create_socket_udp_impl(_service), delete_socket_udp_impl){
+socket::socket(async_service & _service) :
+	sptr(create_socket_udp_impl(_service),
+	delete_socket_udp_impl),
+	_sendtosignal(&sptr->_sendtosignal),
+	_recvfromsignal(&sptr->_recvfromsignal)
+{
 }
 
 socket::~socket(){

@@ -18,6 +18,7 @@
 #include "socket.h"
 #include "callbackdef.h"
 #include "enumdef.h"
+#include "signaldef.h"
 
 #include <boost/function.hpp>
 #include <boost/atomic.hpp>
@@ -37,9 +38,11 @@ public:
 
 	void async_accept(acceptstate _acceptstate);
 
+private:
+	void acceptcallback(socket & s);
+
 public:
-	void registeracceptcallback(acceptcallback _acceptcallback);
-	acceptcallback _acceptcallback;
+	acceptsignal _acceptsignal;
 
 private:
 	boost::atomic_flag _mutex;

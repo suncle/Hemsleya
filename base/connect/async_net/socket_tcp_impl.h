@@ -13,6 +13,7 @@
 #include "readbuff.h"
 #include "enumdef.h"
 #include "callbackdef.h"
+#include "signaldef.h"
 #include "socket_base_impl.h"
 
 #ifdef _WINDOWS
@@ -38,43 +39,31 @@ public:
 
 public:
 	void async_send(char * buf, uint32_t len);
+	sendsignal _sendsignal;
 
 private:
 	writebuff outbuff;
+	void sendcallback();
+	boost::atomic_flag _sendcallbackmutex;
 
 public:
 	void async_recv(recv_state _state);
+	recvsignal _recvsignal;
 
 private:
 	readbuf inbuff;
 	recv_state _revc_state;
+	boost::atomic_flag _recvcallbackmutex;
+	void recvcallback(char * buff, uint32_t len);
 
 public:
 	void async_connect(const address & addr);
-	
-private:
-	connect_state _connect_state;
-
-public:
-	void registersendcallback(sendcallback _fnsendcallback);
-	sendcallback fnsendcallback;
-
-private:
-	boost::atomic_flag _sendcallbackmutex;
-
-public:
-	void registerrecvcallback(recvcallback _fnrecvcallback);
-	recvcallback fnrecvcallback;
-
-private:
-	boost::atomic_flag _recvcallbackmutex;
-	
-public:
-	void registerconnectcallback(connectcallback _fnconnectcallback);
-	connectcallback fnconnectcallback;
+	connectsignal _connectsignal;
 	
 private:
 	boost::atomic_flag _connectcallbackmutex;
+	connect_state _connect_state;
+	void connectcallback();
 
 private:
 	friend class endpoint;

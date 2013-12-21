@@ -34,7 +34,7 @@ endpoint::endpoint(async_service & _service, const address & addr) : _pservice(&
 		throw exception::bindException("bind fail", WSAGetLastError());
 	}
 
-	_service.addsocket(s);
+	_service.addendpoint(*this);
 }
 
 endpoint::~endpoint(){
@@ -48,13 +48,11 @@ void endpoint::async_accept(acceptstate _acceptstate){
 	}
 
 	socket _sa(*_pservice);
-	TCP::async_accept(s, _sa.sptr->s, _sa.sptr->inbuff.buff, boost::bind(_acceptcallback, _sa));
+	TCP::async_accept(s, _sa.sptr->s, _sa.sptr->inbuff.buff, boost::bind(boost::bind(endpoint::acceptcallback, this), _sa));
 }
 
-void endpoint::registeracceptcallback(acceptcallback _acceptcallback_){
-	while(_mutex.test_and_set());
-	_acceptcallback = _acceptcallback_;
-	_mutex.clear();
+void endpoint::acceptcallback(socket & s){
+	_acceptsignal(s);
 }
 
 } //TCP

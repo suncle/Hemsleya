@@ -42,11 +42,9 @@ public:
 	void cancelio();
 
 public:
-	void registersendcallback(sendcallback _fnsendcallback);
-	
-	void registerrecvcallback(recvcallback _fnrecvcallback);
-
-	void registerconnectcallback(connectcallback _fnconnectcallback);
+	sendsignal * _sendsignal;
+	recvsignal * _recvsignal;
+	connectsignal * _connectsignal;
 
 private:
 	boost::shared_ptr<socket_impl> sptr;
@@ -78,9 +76,8 @@ public:
 	void cancelio();
 
 public:
-	void registersendtocallback(sendtocallback _fnsendcallback);
-
-	void registerrecvfromcallback(recvfromcallback _fnrecvcallback);
+	sendtosignal * _sendtosignal;
+	recvfromsignal * _recvfromsignal;
 
 private:
 	boost::shared_ptr<socket_impl> sptr;

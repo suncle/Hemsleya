@@ -38,29 +38,21 @@ public:
 
 public:
 	void async_sendto(const sockaddr * addr, char * buf, uint32_t len);
+	sendtosignal _sendtosignal;
 
 private:
 	writebuff outbuff;
+	void sendtocallback();
+	boost::atomic_flag _sendcallbackmutex;
 
 public:
 	void async_recvfrom(recv_state _state);
+	recvfromsignal _recvfromsignal;
 
 private:
 	readbuf inbuff;
 	recv_state _revc_state;
-
-public:
-	void registersendtocallback(sendtocallback _fnsendcallback);
-	sendtocallback fnsendcallback;
-
-private:
-	boost::atomic_flag _sendcallbackmutex;
-
-public:
-	void registerrecvfromcallback(recvfromcallback _fnrecvcallback);
-	recvfromcallback fnrecvcallback;
-
-private:
+	void recvfromcallback(char * buff, uint32_t len, const address & addr);
 	boost::atomic_flag _recvcallbackmutex;
 	
 private:

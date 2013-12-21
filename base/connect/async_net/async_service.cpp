@@ -22,15 +22,15 @@ void async_service::run(){
 	_impl.run();
 }
 
-void async_service::addendpoint(TCP::endpoint e){
+void async_service::addendpoint(TCP::endpoint & e){
 	_impl.addsocket(e.s);
 }
 
-void async_service::addsocket(TCP::socket s){
+void async_service::addsocket(TCP::socket & s){
 	_impl.addsocket(s.sptr->s);
 }
 
-void async_service::addsocket(UDP::socket s){
+void async_service::addsocket(UDP::socket & s){
 	_impl.addsocket(s.sptr->s);
 }
 

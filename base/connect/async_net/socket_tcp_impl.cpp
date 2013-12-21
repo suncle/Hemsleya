@@ -39,37 +39,34 @@ void socket_impl::async_connect(const address & addr){
 		throw exception::ConnectException("is connected");
 	}
 
-	TCP::async_connect(s, addr.getsockaddr(), fnconnectcallback);
+	TCP::async_connect(s, addr.getsockaddr(), boost::bind(socket_impl::connectcallback, this));
+}
+
+void socket_impl::connectcallback()
+{
+	_connectsignal();
 }
 
 void socket_impl::async_send(char * inbuf, uint32_t len){
-	outbuff.write(inbuf, len, boost::bind(TCP::async_send, s, _1, fnsendcallback));
+	outbuff.write(inbuf, len, boost::bind(TCP::async_send, s, _1, boost::bind(socket_impl::sendcallback, this)));
+}
+
+void socket_impl::sendcallback()
+{
+	_sendsignal();
 }
 
 void socket_impl::async_recv(recv_state _state){
 	if (_revc_state != _recv && _state == _recv){
 		_revc_state = _state;
 
-		TCP::async_recv(s, inbuff.buff, inbuff.max, fnrecvcallback);
+		TCP::async_recv(s, inbuff.buff, inbuff.max, boost::bind(socket_impl::recvcallback, this));
 	}
 }
 
-void socket_impl::registersendcallback(sendcallback _fnsendcallback){
-	while(_sendcallbackmutex.test_and_set());
-	fnsendcallback = _fnsendcallback;
-	_sendcallbackmutex.clear();
-}
-
-void socket_impl::registerrecvcallback(recvcallback _fnrecvcallback){
-	while(_recvcallbackmutex.test_and_set());
-	fnrecvcallback = _fnrecvcallback;
-	_sendcallbackmutex.clear();
-}
-
-void socket_impl::registerconnectcallback(connectcallback _fnconnectcallback){
-	while(_connectcallbackmutex.test_and_set());
-	fnconnectcallback = _fnconnectcallback;
-	_connectcallbackmutex.clear();
+void socket_impl::recvcallback(char * buff, uint32_t len)
+{
+	_recvsignal(buff, len);
 }
 
 Hemsleya::abstract_factory::abstract_factory<socket_impl> _abstract_factory_socket_impl;
