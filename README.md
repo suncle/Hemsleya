@@ -3,6 +3,8 @@
 
 an open-source C++ library developed by qianqians
 
+合并async_net 到 connect
+
 fsm 状态机
 
 async_net 第2版 windows only
