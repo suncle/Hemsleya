@@ -21,7 +21,7 @@ public:
 	writebuff();
 	~writebuff();
 
-	int write(char * buf, uint32_t len, boost::function<void(const std::vector<buffstruct> & buff)> fn);
+	int write(char * buf, uint32_t len, boost::function<void(const std::vector<buffstruct> * const buff)> fn);
 
 	void freebuff(char * buff, uint32_t buflen);
 

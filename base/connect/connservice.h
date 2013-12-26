@@ -7,7 +7,7 @@
 #ifndef _CONNSERVICE_H
 #define _CONNSERVICE_H
 
-#include <Hemsleya/base/async_net/async_net.h>
+#include <Hemsleya/base/connect/async_net/async_net.h>
 
 namespace Hemsleya { 
 namespace connect {

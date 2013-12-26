@@ -27,9 +27,9 @@ public:
 
 	void run();
 
-	void addendpoint(TCP::endpoint e);
-	void addsocket(TCP::socket s);
-	void addsocket(UDP::socket s);
+	void addendpoint(TCP::endpoint & e);
+	void addsocket(TCP::socket & s);
+	void addsocket(UDP::socket & s);
 
 private:
 	work_impl _impl;

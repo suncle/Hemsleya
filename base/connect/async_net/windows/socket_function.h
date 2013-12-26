@@ -29,7 +29,7 @@ void async_accept(SOCKET sl, SOCKET sa, char * recvbuff, boost::function<void() 
 
 void async_connect(SOCKET s, const sockaddr * addr, boost::function<void() > connectcallback);
 
-void async_send(SOCKET s, const std::vector<buffstruct> & buff, boost::function<void() > sendcallback);
+void async_send(SOCKET s, const std::vector<buffstruct> * const buff, boost::function<void() > sendcallback);
 
 void async_recv(SOCKET s, char * buff, const uint32_t buflen, boost::function<void(char * buff, uint32_t recvlen) > recvcallback);
 
@@ -37,7 +37,7 @@ void async_recv(SOCKET s, char * buff, const uint32_t buflen, boost::function<vo
 
 namespace UDP{
 
-void async_sendto(SOCKET s, const sockaddr * addr, const std::vector<buffstruct> & buff, boost::function<void() > sendtocallback);
+void async_sendto(SOCKET s, const sockaddr * addr, const std::vector<buffstruct> * const buff, boost::function<void() > sendtocallback);
 
 void async_recvfrom(SOCKET s, char * buff, const uint32_t buflen, boost::function<void(char * buff, uint32_t len, const address & addr) > recvfromcallback);
 

@@ -31,14 +31,14 @@ socket_impl::socket_impl(async_net::async_service & _service) : async_net::socke
 }
 
 void socket_impl::async_sendto(const sockaddr * addr, char * inbuf, uint32_t len){
-	outbuff.write(inbuf, len, boost::bind(UDP::async_sendto, s, addr, _1, boost::bind(socket_impl::sendtocallback, this)));
+	outbuff.write(inbuf, len, boost::bind(UDP::async_sendto, s, addr, _1, boost::bind(&socket_impl::sendtocallback, this)));
 }
 
 void socket_impl::async_recvfrom(recv_state _state){
 	if (_revc_state != _recv && _state == _recv){
 		_revc_state = _state;
 
-		UDP::async_recvfrom(s, inbuff.buff, inbuff.max, boost::bind(socket_impl::recvfromcallback, this));
+		UDP::async_recvfrom(s, inbuff.buff, inbuff.max, boost::bind(&socket_impl::recvfromcallback, this));
 	}
 }
 

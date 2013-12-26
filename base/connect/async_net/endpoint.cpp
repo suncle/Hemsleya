@@ -48,7 +48,7 @@ void endpoint::async_accept(acceptstate _acceptstate){
 	}
 
 	socket _sa(*_pservice);
-	TCP::async_accept(s, _sa.sptr->s, _sa.sptr->inbuff.buff, boost::bind(boost::bind(endpoint::acceptcallback, this), _sa));
+	TCP::async_accept(s, _sa.sptr->s, _sa.sptr->inbuff.buff, boost::bind(&endpoint::acceptcallback, this, _sa));
 }
 
 void endpoint::acceptcallback(socket & s){

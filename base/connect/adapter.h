@@ -9,8 +9,10 @@
 
 #include <boost/signals2.hpp>
 
-#include <Hemsleya/base/async_net/async_net.h>
+#include <Hemsleya/base/connect/async_net/async_net.h>
 #include <Hemsleya/base/concurrent/container/small_hash_map.h>
+
+#include "address.h"
 
 namespace Hemsleya { 
 namespace connect {

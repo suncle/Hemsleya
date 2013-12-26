@@ -7,7 +7,7 @@
 #ifndef _SESSION_H
 #define _SESSION_H
 
-#include <Hemsleya/base/async_net/async_net.h>
+#include <Hemsleya/base/connect/async_net/async_net.h>
 
 #include <boost/signals2.hpp>
 

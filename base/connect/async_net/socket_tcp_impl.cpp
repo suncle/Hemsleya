@@ -39,7 +39,7 @@ void socket_impl::async_connect(const address & addr){
 		throw exception::ConnectException("is connected");
 	}
 
-	TCP::async_connect(s, addr.getsockaddr(), boost::bind(socket_impl::connectcallback, this));
+	TCP::async_connect(s, addr.getsockaddr(), boost::bind(&socket_impl::connectcallback, this));
 }
 
 void socket_impl::connectcallback()
@@ -48,7 +48,7 @@ void socket_impl::connectcallback()
 }
 
 void socket_impl::async_send(char * inbuf, uint32_t len){
-	outbuff.write(inbuf, len, boost::bind(TCP::async_send, s, _1, boost::bind(socket_impl::sendcallback, this)));
+	outbuff.write(inbuf, len, boost::bind(TCP::async_send, s, _1, boost::bind(&socket_impl::sendcallback, this)));
 }
 
 void socket_impl::sendcallback()
@@ -60,7 +60,7 @@ void socket_impl::async_recv(recv_state _state){
 	if (_revc_state != _recv && _state == _recv){
 		_revc_state = _state;
 
-		TCP::async_recv(s, inbuff.buff, inbuff.max, boost::bind(socket_impl::recvcallback, this));
+		TCP::async_recv(s, inbuff.buff, inbuff.max, boost::bind(&socket_impl::recvcallback, this, _1, _2));
 	}
 }
 

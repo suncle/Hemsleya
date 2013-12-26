@@ -16,13 +16,13 @@ enum udp_state{
 };
 
 session::session(connect::connservice & _service, const address & tcpaddr, const address & udpaddr) : 
-pservice(&_service), tcpsocket(_service._service), udpsocket(_service._service){
+pservice(&_service), tcpsocket(_service._service), udpsocket(_service._service), remoteaddr(udpaddr){
 	_state = no_conn;
 
 	tcpsocket.bind(tcpaddr);
 	udpsocket.bind(udpaddr);
 
-	tcpsocket.registerconnectcallback(boost::bind(&session::onConnect, this));
+	tcpsocket._connectsignal->connect(boost::bind(&session::onConnect, this));
 }
 
 session::~session(){
@@ -37,7 +37,7 @@ void session::onConnect(){
 
 	sigConn();
 
-	tcpsocket.registerrecvcallback(boost::bind(&session::onData, this, _1, _2));
+	tcpsocket._recvsignal->connect(boost::bind(&session::onData, this, _1, _2));
 }
 
 void session::send(char * buff, uint32_t len){
@@ -49,7 +49,7 @@ void session::send(char * buff, uint32_t len){
 		*_id++ = id;
 		memcpy((char*)_id, buff, len);
 
-		udpsocket.async_sendto(&remoteaddr, buff, len);
+		udpsocket.async_sendto((Hemsleya::async_net::address*)(&remoteaddr), buff, len);
 	}
 }
 

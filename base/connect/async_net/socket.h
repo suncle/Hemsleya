@@ -9,6 +9,8 @@
 
 #include "enumdef.h"
 #include "callbackdef.h"
+#include "signaldef.h"
+#include "address.h"
 
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
@@ -17,7 +19,6 @@ namespace Hemsleya {
 namespace async_net { 
 
 class async_service;
-class address;
 
 namespace TCP{
 

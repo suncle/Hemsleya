@@ -82,19 +82,19 @@ void async_connect(SOCKET s, const sockaddr * addr, boost::function<void() > con
 	}
 }
 
-void async_send(SOCKET s, const std::vector<buffstruct> & buff, boost::function<void() > sendcallback){
+void async_send(SOCKET s, const std::vector<buffstruct> * const buff, boost::function<void() > sendcallback){
 	overlappedsend * poverlapped = static_cast<overlappedsend*>(GetOverlapped(event_send));
 
-	WSABUF * pWSABUF = GetWSABUF(buff.size());
-	for(uint32_t i = 0; i < buff.size(); i++){
-		pWSABUF[i].buf = buff[i].buff;
-		pWSABUF[i].len = buff[i].len;
+	WSABUF * pWSABUF = GetWSABUF(buff->size());
+	for(uint32_t i = 0; i < buff->size(); i++){
+		pWSABUF[i].buf = (*buff)[i].buff;
+		pWSABUF[i].len = (*buff)[i].len;
 	}
-	poverlapped->vectbuff.assign(buff.begin(), buff.end());
+	poverlapped->vectbuff.assign(buff->begin(), buff->end());
 	poverlapped->fncallback = sendcallback;
 
 	DWORD bytes;
-	if (SOCKET_ERROR == WSASend(s, pWSABUF, buff.size(), &bytes, 0, &poverlapped->ovlap, 0)){
+	if (SOCKET_ERROR == WSASend(s, pWSABUF, buff->size(), &bytes, 0, &poverlapped->ovlap, 0)){
 		int err = WSAGetLastError();
 		if (err != ERROR_IO_PENDING){
 			throw exception::SendException("Send fail", err);
@@ -123,19 +123,19 @@ void async_recv(SOCKET s, char * buff, const uint32_t buflen, boost::function<vo
 
 namespace UDP{
 
-void async_sendto(SOCKET s, const sockaddr * addr, const std::vector<buffstruct> & buff, boost::function<void() > sendtocallback){
-	WSABUF * pWSABUF = GetWSABUF(buff.size());
-	for(uint32_t i = 0; i < buff.size(); i++){
-		pWSABUF[i].buf = buff[i].buff;
-		pWSABUF[i].len = buff[i].len;
+void async_sendto(SOCKET s, const sockaddr * addr, const std::vector<buffstruct> * const buff, boost::function<void() > sendtocallback){
+	WSABUF * pWSABUF = GetWSABUF(buff->size());
+	for(uint32_t i = 0; i < buff->size(); i++){
+		pWSABUF[i].buf = (*buff)[i].buff;
+		pWSABUF[i].len = (*buff)[i].len;
 	}
 
 	overlappedsend * poverlapped = static_cast<overlappedsend*>(GetOverlapped(event_sendto));
 	poverlapped->fncallback = sendtocallback;
-	poverlapped->vectbuff.assign(buff.begin(), buff.end());
+	poverlapped->vectbuff.assign(buff->begin(), buff->end());
 
 	DWORD bytes;
-	if (SOCKET_ERROR == WSASendTo(s, pWSABUF, buff.size(), &bytes, 0, addr, sizeof(addr), &poverlapped->ovlap, 0)){
+	if (SOCKET_ERROR == WSASendTo(s, pWSABUF, buff->size(), &bytes, 0, addr, sizeof(addr), &poverlapped->ovlap, 0)){
 		int err = WSAGetLastError();
 		if (err != ERROR_IO_PENDING){
 			throw exception::SendtoException("Sendto fail", err);

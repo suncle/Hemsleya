@@ -45,5 +45,4 @@ private:
 } //async_net
 } //Hemsleya
 
-
 #endif //_ADDRESS_H

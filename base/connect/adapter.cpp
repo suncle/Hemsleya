@@ -14,7 +14,7 @@ namespace connect {
 adapter::adapter(connservice & _service, const address & tcpaddr, const address & udpaddr) :
 _endpoint(_service._service, tcpaddr), _socket(_service._service), iSessionID(0){
 	_socket.bind(udpaddr);
-	_endpoint.registeracceptcallback(boost::bind(adapter::acceptcallback, this, _1));
+	//_endpoint.registeracceptcallback(boost::bind(adapter::acceptcallback, this, _1));
 }
 
 adapter::~adapter(){

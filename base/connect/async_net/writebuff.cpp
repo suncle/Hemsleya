@@ -15,7 +15,7 @@ writebuff::writebuff() : _list(0){
 writebuff::~writebuff(){
 }
 
-int writebuff::write(char * buf, uint32_t len, boost::function<void(const std::vector<buffstruct> & buff)> fn){
+int writebuff::write(char * buf, uint32_t len, boost::function<void(const std::vector<buffstruct> * const buff)> fn){
 	boost::shared_lock<boost::shared_mutex> lock(_mutex);
 
 	std::vector<writebuffstruct> * pbuf = tss_buff.get();
@@ -54,7 +54,7 @@ int writebuff::write(char * buf, uint32_t len, boost::function<void(const std::v
 			}
 		}
 
-		fn(outbuf);
+		fn(&outbuf);
 	}
 
 	return 0;
