@@ -7,7 +7,7 @@
 #ifndef _SESSION_H
 #define _SESSION_H
 
-#include <Hemsleya/base/connect/async_net/async_net.h>
+#include <Hemsleya/base/async_net/async_net.h>
 
 #include <boost/signals2.hpp>
 
@@ -35,18 +35,24 @@ private:
 public:
 	void connect(const address & remoteaddr);
 
-	void send(char * buff, uint32_t len);
-
 	boost::signals2::signal<void() > sigConn;
 
-	boost::signals2::signal<void() > sigSend;
+	void unsafesend(char * buff, uint32_t len);
+
+	boost::signals2::signal<void() > sigUnsafesend;
+
+	void safesend(char * buff, uint32_t len);
+
+	boost::signals2::signal<void() > sigSafesend;
 
 	boost::signals2::signal<void(char * , uint32_t) > sigData;
 
 private:
 	void onConnect();
 
-	void onSend();
+	void onunsafesend();
+
+	void onsafesend();
 
 	void onData(char * buff, uint32_t len);
 

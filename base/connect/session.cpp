@@ -49,7 +49,7 @@ void session::send(char * buff, uint32_t len){
 		*_id++ = id;
 		memcpy((char*)_id, buff, len);
 
-		udpsocket.async_sendto((Hemsleya::async_net::address*)(&remoteaddr), buff, len);
+		udpsocket.async_sendto(remoteaddr.getsockaddr(), buff, len);
 	}
 }
 

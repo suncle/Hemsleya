@@ -48,7 +48,8 @@ void socket_impl::connectcallback()
 }
 
 void socket_impl::async_send(char * inbuf, uint32_t len){
-	outbuff.write(inbuf, len, boost::bind(TCP::async_send, s, _1, boost::bind(&socket_impl::sendcallback, this)));
+	boost::function<void(void)> fn = boost::bind(&socket_impl::sendcallback, this);
+	outbuff.write(inbuf, len, boost::bind(TCP::async_send, s, _1, fn));
 }
 
 void socket_impl::sendcallback()
