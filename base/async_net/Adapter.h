@@ -1,11 +1,11 @@
 /*
- * endpoint.h
+ * Adapter.h
  *   Created on: 2013-10-2
  *       Author: qianqians
- * endpoint
+ * Adapter
  */
-#ifndef _ENDPOINT_H
-#define _ENDPOINT_H
+#ifndef _ASYNC_NET_ADAPTER_H
+#define _ASYNC_NET_ADAPTER_H
 
 #ifdef _WINDOWS
 #include "windows/winhdef.h"
@@ -31,10 +31,10 @@ namespace async_net {
 
 namespace TCP {
 	
-class endpoint{
+class Adapter{
 public:
-	endpoint(async_service & _service, const address & addr);
-	~endpoint();
+	Adapter(async_service & _service, const address & addr);
+	~Adapter();
 
 	void async_accept(acceptstate _acceptstate);
 
@@ -61,4 +61,4 @@ private:
 } //async_net
 } //Hemsleya
 
-#endif //_ENDPOINT_H
+#endif //_ASYNC_NET_ADAPTER_H

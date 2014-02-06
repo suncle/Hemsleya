@@ -1,10 +1,10 @@
 /*
- * endpoint.cpp
+ * Adapter.cpp
  *   Created on: 2013-10-9
  *       Author: qianqians
- * endpoint
+ * Adapter
  */
-#include "endpoint.h"
+#include "Adapter.h"
 #include "socket_tcp_impl.h"
 
 #ifdef _WINDOWS
@@ -21,7 +21,7 @@ namespace async_net {
 
 namespace TCP{
 
-endpoint::endpoint(async_service & _service, const address & addr) : _pservice(&_service){
+Adapter::Adapter(async_service & _service, const address & addr) : _pservice(&_service){
 	_state = addr.version();
 
 	if (_state == ipv4){
@@ -34,24 +34,24 @@ endpoint::endpoint(async_service & _service, const address & addr) : _pservice(&
 		throw exception::bindException("bind fail", WSAGetLastError());
 	}
 
-	_service.addendpoint(*this);
+	_service.addAdapter(*this);
 }
 
-endpoint::~endpoint(){
+Adapter::~Adapter(){
 	CancelIo((HANDLE)s);
 	closesocket(s);
 }
 
-void endpoint::async_accept(acceptstate _acceptstate){
+void Adapter::async_accept(acceptstate _acceptstate){
 	if (s == INVALID_SOCKET){
 		throw exception::AcceptException("socket is invalid", 0);
 	}
 
 	socket _sa(*_pservice);
-	TCP::async_accept(s, _sa.sptr->s, _sa.sptr->inbuff.buff, boost::bind(&endpoint::acceptcallback, this, _sa));
+	TCP::async_accept(s, _sa.sptr->s, _sa.sptr->inbuff.buff, boost::bind(&Adapter::acceptcallback, this, _sa));
 }
 
-void endpoint::acceptcallback(socket & s){
+void Adapter::acceptcallback(socket & s){
 	_acceptsignal(s);
 }
 

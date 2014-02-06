@@ -9,7 +9,7 @@ SET(header_files
     async_net.h
     async_service.h
     address.h
-    endpoint.h
+    Adapter.h
     socket.h
     socket_base_impl.h
     socket_tcp_impl.h

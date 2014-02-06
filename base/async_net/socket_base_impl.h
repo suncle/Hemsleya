@@ -44,7 +44,7 @@ protected:
 	SOCKET s;
 	async_service * pservice;
 
-	friend class endpoint; 
+	friend class Adapter;
 	friend class async_service;
 
 };  

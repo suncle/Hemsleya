@@ -66,7 +66,7 @@ private:
 	void connectcallback();
 
 private:
-	friend class endpoint;
+	friend class Adapter;
 
 };  
 

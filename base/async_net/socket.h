@@ -50,7 +50,7 @@ public:
 private:
 	boost::shared_ptr<socket_impl> sptr;
 
-	friend class endpoint;
+	friend class Adapter;
 	friend class async_service;
 
 };  

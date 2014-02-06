@@ -9,7 +9,7 @@
 
 #include "socket.h"
 #include "address.h"
-#include "endpoint.h"
+#include "Adapter.h"
 #include "async_service.h"
 
 #endif //_ASYNC_NET_H

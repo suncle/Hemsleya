@@ -40,7 +40,7 @@ void session::onConnect(){
 	tcpsocket._recvsignal->connect(boost::bind(&session::onData, this, _1, _2));
 }
 
-void session::send(char * buff, uint32_t len){
+void session::safesend(char * buff, uint32_t len){
 	if (_state == tcp_conn){
 		tcpsocket.async_send(buff, len);
 	} else if (_state == udp_conn){
@@ -53,8 +53,25 @@ void session::send(char * buff, uint32_t len){
 	}
 }
 
-void session::onSend(){
-	sigConn();
+void session::onsafesend(){
+	sigSafesend();
+}
+
+void session::unsafesend(char * buff, uint32_t len){
+	if (_state == tcp_conn){
+		tcpsocket.async_send(buff, len);
+	} else if (_state == udp_conn){
+		char * tampbuff[4096];
+		uint32_t * _id = (uint32_t *)tampbuff;
+		*_id++ = id;
+		memcpy((char*)_id, buff, len);
+
+		udpsocket.async_sendto(remoteaddr.getsockaddr(), buff, len);
+	}
+}
+
+void session::onunsafesend(){
+	sigUnsafesend();
 }
 
 void session::onData(char * buff, uint32_t len){

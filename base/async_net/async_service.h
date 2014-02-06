@@ -15,7 +15,7 @@
 #endif
 
 #include "socket.h"
-#include "endpoint.h"
+#include "Adapter.h"
 
 namespace Hemsleya { 
 namespace async_net { 
@@ -27,7 +27,7 @@ public:
 
 	void run();
 
-	void addendpoint(TCP::endpoint & e);
+	void addAdapter(TCP::Adapter & e);
 	void addsocket(TCP::socket & s);
 	void addsocket(UDP::socket & s);
 

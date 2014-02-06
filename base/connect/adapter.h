@@ -40,7 +40,7 @@ private:
 private:
 	accept_state _accept_state;
 
-	async_net::TCP::endpoint _endpoint;
+	async_net::TCP::Adapter _endpoint;
 	async_net::UDP::socket _socket;
 
 	boost::atomic_uint32_t iSessionID;

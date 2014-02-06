@@ -56,7 +56,7 @@ private:
 	boost::atomic_flag _recvcallbackmutex;
 	
 private:
-	friend class endpoint;
+	friend class Adapter;
 
 };  
 

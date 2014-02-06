@@ -22,7 +22,7 @@ void async_service::run(){
 	_impl.run();
 }
 
-void async_service::addendpoint(TCP::endpoint & e){
+void async_service::addAdapter(TCP::Adapter & e){
 	_impl.addsocket(e.s);
 }
 
