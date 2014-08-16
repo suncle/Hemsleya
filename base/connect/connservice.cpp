@@ -21,7 +21,7 @@ void connservice::run(){
 }
 
 void connservice::addconn(session & _session){
-	_service.addsocket(_session.tcpsocket);
+	_service.addsocket(_session._impl->tcpsocket);
 }
 
 } //connect

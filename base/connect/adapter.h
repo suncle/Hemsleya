@@ -13,11 +13,11 @@
 #include <Hemsleya/base/concurrent/container/small_hash_map.h>
 
 #include "address.h"
+#include "session.h"
 
 namespace Hemsleya { 
 namespace connect {
 
-class session;
 class connservice;
 
 enum accept_state{
@@ -32,7 +32,7 @@ public:
 
 	void accept(accept_state _state);
 
-	boost::signals2::signal<void(session*) > sigAccept;
+	boost::signals2::signal<void(session) > sigAccept;
 
 private:
 	void acceptcallback(async_net::TCP::socket & sa);
@@ -40,12 +40,12 @@ private:
 private:
 	accept_state _accept_state;
 
-	async_net::TCP::Adapter _endpoint;
+	async_net::TCP::Adapter _adapter;
 	async_net::UDP::socket _socket;
 
 	boost::atomic_uint32_t iSessionID;
 
-	container::small_hash_map<uint32_t, session*> map_session;
+	container::small_hash_map<uint32_t, sessionimpl*> map_session;
 
 };  
 

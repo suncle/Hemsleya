@@ -12,9 +12,9 @@ namespace Hemsleya {
 namespace connect {
 
 adapter::adapter(connservice & _service, const address & tcpaddr, const address & udpaddr) :
-_endpoint(_service._service, tcpaddr), _socket(_service._service), iSessionID(0){
+_adapter(_service._service, tcpaddr), _socket(_service._service), iSessionID(0){
 	_socket.bind(udpaddr);
-	//_endpoint.registeracceptcallback(boost::bind(adapter::acceptcallback, this, _1));
+	_adapter._acceptsignal.connect(boost::bind(&adapter::acceptcallback, this, _1));
 }
 
 adapter::~adapter(){
@@ -22,9 +22,9 @@ adapter::~adapter(){
 
 void adapter::accept(accept_state _state){
 	if (_state == begin_accept){
-		_endpoint.async_accept(async_net::TCP::beginaccept);
+		_adapter.async_accept(async_net::TCP::beginaccept);
 	}else if (_state == end_accept){
-		_endpoint.async_accept(async_net::TCP::endaccept);
+		_adapter.async_accept(async_net::TCP::endaccept);
 	}
 }
 

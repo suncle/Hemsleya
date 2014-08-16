@@ -15,6 +15,7 @@
 #include "callbackdef.h"
 #include "signaldef.h"
 #include "socket_base_impl.h"
+#include "netbuff.h"
 
 #ifdef _WINDOWS
 #include "windows/socket_function.h"
@@ -38,7 +39,7 @@ public:
 	socket_impl(async_net::async_service & _service);
 
 public:
-	void async_send(char * buf, uint32_t len);
+	void async_send(netbuff buff);
 	sendsignal _sendsignal;
 
 private:

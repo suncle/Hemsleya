@@ -26,7 +26,7 @@ public:
 private:
 	async_net::async_service _service;
 
-	friend class session;
+	friend class sessionimpl;
 	friend class adapter;
 
 };  

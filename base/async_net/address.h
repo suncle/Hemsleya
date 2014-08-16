@@ -25,10 +25,16 @@ namespace async_net {
 
 class address{
 public:
+	address(){ memset(addr, 0, sizeof(sockaddr_in6)); }
+
 	address(char * ip, short port);
+	address(const address & _address);
 	address(sockaddr * addr, int len);
 	~address();
 
+	void operator = (const address & _address);
+
+public:
 	const sockaddr * getsockaddr() const;
 
 	const uint32_t addrlen() const;

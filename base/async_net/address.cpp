@@ -39,14 +39,34 @@ address::address(char * ip, short port){
 address::address(sockaddr * _addr, int len){
 	if (len == sizeof(sockaddr_in)){
 		_ipstate = ipv4;
-		*((sockaddr_in*)addr) = *((sockaddr_in*)_addr);
+		memcpy(addr, _addr, sizeof(sockaddr_in));
 	}else if (len == sizeof(sockaddr_in6)){
 		_ipstate = ipv6;
-		*((sockaddr_in6*)addr) = *((sockaddr_in6*)_addr);
+		memcpy(addr, _addr, sizeof(sockaddr_in6));
+	}
+}
+
+address::address(const address & _address){
+	_ipstate = _address._ipstate;
+
+	if (_ipstate == ipv4){
+		memcpy(addr, _address.addr, sizeof(sockaddr_in));
+	} else if (_ipstate == ipv6){
+		memcpy(addr, _address.addr, sizeof(sockaddr_in6));
 	}
 }
 
 address::~address(){
+}
+
+void address::operator = (const address & _address){
+	_ipstate = _address._ipstate;
+
+	if (_ipstate == ipv4){
+		memcpy(addr, _address.addr, sizeof(sockaddr_in));
+	} else if (_ipstate == ipv6){
+		memcpy(addr, _address.addr, sizeof(sockaddr_in6));
+	}
 }
 
 const sockaddr * address::getsockaddr() const{

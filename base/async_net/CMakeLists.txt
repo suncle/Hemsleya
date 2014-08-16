@@ -19,6 +19,7 @@ SET(header_files
     buffstruct.h
     enumdef.h
     callbackdef.h
+    netbuff.h
 )
 
 SET(header_files_exception
@@ -46,7 +47,6 @@ SET(windows_header_files
     windows/socket_function.h
     windows/wsabuff.h
 )
-
 
 SET(SRC_LIST
     ${DIR_SRC}
